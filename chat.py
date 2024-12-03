@@ -46,7 +46,8 @@ query_engine = vector_index.as_chat_engine(llm=OpenAI(
     * Provide the detailed explaination of the contents of the sec filings
     * Read the entire sec filing data provided and provide the detailed explaination of the contents of the sec filings
     * Instead of Redirecting the user to the actual source explain the content of that source as you already have access to those data
-
+    * Also if the data is only in pdf format then dont provide the pdf link, just mention that the data is not available
+    
     - For shareholders queries:
     * Provide the detailed explaination of the shareholders data if available
     * Provide the data in tabular format if available
