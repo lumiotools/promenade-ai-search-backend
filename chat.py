@@ -4,6 +4,7 @@ from llama_index.core.retrievers import VectorIndexRetriever
 from llama_index.vector_stores.pinecone import PineconeVectorStore
 from llama_index.embeddings.openai import OpenAIEmbedding
 from llama_index.llms.openai import OpenAI
+from llama_index.core.base.llms.types import ChatMessage,MessageRole
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -24,9 +25,6 @@ retriever = VectorIndexRetriever(index=vector_index, similarity_top_k=15)
 
 query_engine = vector_index.as_chat_engine(llm=OpenAI(
     model="gpt-4o-mini", system_prompt="""
- Here’s a robust and clear system prompt tailored to ensure accurate and detailed responses within the defined scope:
-
----
 
 You are a specialized Financial AI Assistant focusing exclusively on Nasdaq-listed companies' investor relations (IR) and SEC Filings data. Your primary objectives are:
 
@@ -34,6 +32,7 @@ You are a specialized Financial AI Assistant focusing exclusively on Nasdaq-list
    - ONLY respond to queries directly related to Nasdaq-listed companies
    - Interpret company name variations contextually (e.g., "apple" = Apple Inc., not the fruit)
    - Reject any queries unrelated to financial, investment, or corporate information
+   - dont use extrenal knowledge
 
 2. Query Processing Rules:
    - For specific company queries:
@@ -64,23 +63,8 @@ You are a specialized Financial AI Assistant focusing exclusively on Nasdaq-list
      * Speculative or non-verifiable information
      * Queries not related to Nasdaq-listed corporate entities
 
-4. Company Name Interpretation:
-   - Automatically map partial or abbreviated company names to their full corporate identities
-   - Examples:
-     * "apple" → Apple Inc. (AAPL)
-     * "microsoft" → Microsoft Corporation (MSFT)
-     * "google" → Alphabet Inc. (GOOGL)
 
-5. Response Methodology:
-   - Use authoritative, fact-based language
-   - Cite specific financial sources when possible
-   - Provide clear, structured information
-   - Focus on objective financial analysis
-   - Provide the detailed responce, including the detailed data from the sources
-
-Operational Principle: If a query does not clearly relate to Nasdaq-listed companies' financial information, respond with a professional declination, guiding the user to refine their query.4
-
-6. Context and Scope Constraints:
+4. Context and Scope Constraints:
 - Respond **only** to queries directly related to Nasdaq-listed companies.
 - Automatically interpret partial or colloquial mentions of company names as their corresponding Nasdaq-listed corporate entities:
   - Examples:
@@ -89,30 +73,12 @@ Operational Principle: If a query does not clearly relate to Nasdaq-listed compa
     - "google" = **Alphabet Inc. (GOOGL)**
 - Immediately reject any query unrelated to financial, investment, or corporate topics concerning Nasdaq-listed companies.
 
-7. Query Processing Rules:
- For Specific Company Queries:
-- Provide:
-  - A detailed overview of the company's **investor relations** and **SEC filings** pages.
-  - Key financial metrics, such as revenue, profit, EPS, and other critical data.
-  - Insights from the latest **quarterly** and **annual reports**.
-  - Recent **stock performance trends**.
-  - An overview of the latest SEC filings with a focus on significant developments or disclosures.
 
   For General Financial Queries:
 - Only respond if the query pertains to Nasdaq-listed companies.
 - Offer data-driven insights and objective analysis with clear, concise language.
 
- For SEC Filings Queries:
-- Provide a detailed explanation of the contents of SEC filings:
-  - Summarize the entire SEC filing document if provided or accessible.
-  - Highlight key details such as material events, financial statements, management analysis, or other critical disclosures.
-  - Avoid redirecting to external sources or links; instead, offer comprehensive summaries.
-  - If the data is inaccessible or only in PDF format, state explicitly: "The data is not available."
 
-#### For Shareholder Queries:
-- Provide shareholder details (e.g., top institutional and insider holdings) if available:
-  - Present the data in a clear, tabular format.
-  - If data is unavailable, explicitly state: "The data is not available."
 
 8. Strict Rejection Criteria:
 Reject queries outright if they:
@@ -124,19 +90,48 @@ Reject queries outright if they:
   - Example: "tesla" = **Tesla Inc. (TSLA)**, "meta" = **Meta Platforms Inc. (META)**.
 - Assume all company names refer to Nasdaq-listed entities unless explicitly stated otherwise.
 
-10. Response Methodology:
-- Use fact-based, authoritative language.
-- Provide structured, detailed responses including financial data and insights.
-- Always prioritize clarity, objectivity, and relevance to Nasdaq-listed companies.
-- Never redirect users to external sources; instead, summarize and explain comprehensively.
 
-You are an AI assistant restricted to responding using only the provided context. Do not reference external information, make assumptions, or speculate beyond what is explicitly stated in the context. Your responses should remain accurate, concise, and strictly aligned with the given information. If the context does not provide sufficient details to answer, do not offer any additional or unrelated information.
-
- """,temperature=0))
+You are an AI assistant. Respond only using the information provided in the context. Do not include external knowledge, general information, or assumptions. If the context does not contain sufficient information to answer the query, do not provide any response.
+ """,temperature=0.5))
 
 
 def handle_chat(query):
-    answer = query_engine.query(query)
+    answer = query_engine.chat(message=query,
+                               chat_history=[
+      ChatMessage(
+        role=MessageRole.USER,
+        content="apple"
+      ),
+      ChatMessage(
+        role=MessageRole.ASSISTANT,
+        content="""
+        Apple Inc. has recently provided key updates, financial reports, and announcements relevant to investors and the public:
+
+        1. **Fourth Quarter Financial Results (FY 24):**  
+           - **Quarterly Revenue:** $94.9 billion, a **6% increase** year over year.  
+           - **Diluted Earnings Per Share (EPS):** $0.97; adjusted EPS (excluding a one-time charge) was $1.64, reflecting a **12% increase** year over year.  
+           - **Operating Cash Flow:** Nearly $27 billion generated during the quarter.  
+           - **Shareholder Returns:** Over $29 billion returned to shareholders.  
+           - **Dividend Declaration:** A cash dividend of $0.25 per share was declared, payable on November 14, 2024, to shareholders of record as of November 11, 2024.  
+           - **Drivers:** Tim Cook noted record revenue driven by strong demand for the new iPhone 16 lineup and other products, while CFO Luca Maestri emphasized robust operating performance and customer loyalty.  
+           - For more details, view the [press release](https://www.apple.com/newsroom/2024/10/apple-reports-fourth-quarter-results/).  
+
+        2. **Recent SEC Filings:**  
+           - **Form 8-K (October 31, 2024):**  
+             - Includes the quarterly financial results press release and important updates for investors.  
+             - Access the filing [here](https://app.quotemedia.com/data/downloadFiling?webmasterId=90423&ref=318679785&type=HTML&symbol=AAPL&cdn=f7eff34fbbd60ad782cbe98de2cc3d9e&companyName=Apple+Inc.&formType=8-K&formDescription=Current+report+pursuant+to+Section+13+or+15%28d%29&dateFiled=2024-10-31).  
+           - **Form 10-K (November 1, 2024):**  
+             - Apple’s annual report for the fiscal year ended September 28, 2024, offering comprehensive details about financial condition, business operations, and risk factors.  
+             - Access the filing [here](https://app.quotemedia.com/data/downloadFiling?webmasterId=90423&ref=318680792&type=HTML&symbol=AAPL&cdn=a6ac3148f61462e1b7d60719ee317ef9&companyName=Apple+Inc.&formType=10-K&formDescription=Annual+report+pursuant+to+Section+13+or+15%28d%29&dateFiled=2024-11-01).  
+
+        3. **Investor Relations Resources:**  
+           - Investors can stay updated through Apple’s Investor Relations website, which provides financial reports, press releases, and corporate governance details: [Apple Investor Relations](https://investor.apple.com/investor-relations/default.aspx).  
+
+        These updates and reports highlight Apple's financial health, performance metrics, and ongoing efforts to maintain shareholder value.
+        """),
+     
+    ]
+)
 
     sources = []
     for source in answer.source_nodes:
