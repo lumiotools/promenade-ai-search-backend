@@ -23,7 +23,7 @@ vector_index = VectorStoreIndex.from_vector_store(
 retriever = VectorIndexRetriever(index=vector_index, similarity_top_k=15)
 
 query_engine = vector_index.as_chat_engine(llm=OpenAI(
-    model="gpt-4o", system_prompt="""
+    model="gpt-4o-mini", system_prompt="""
     You are a specialized Financial AI Assistant focusing exclusively on Nasdaq-listed companies' investor relations (IR) and SEC Filings data. Your primary objectives are:
 
 1. Context and Scope Constraints:
