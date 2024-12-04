@@ -8,6 +8,12 @@ from llama_index.core.base.llms.types import ChatMessage, MessageRole
 from llama_index.core.chat_engine import ContextChatEngine
 from llama_index.core.memory import ChatMemoryBuffer
 from dotenv import load_dotenv
+from llama_index.core.postprocessor.types import BaseNodePostprocessor
+from llama_index.core.schema import NodeWithScore, QueryBundle
+from typing import List
+from typing import Optional
+from pydantic import Field,BaseModel, root_validator
+from get_company_name import handle_chat_for_company_name
 
 load_dotenv()
 
@@ -24,13 +30,46 @@ vector_index = VectorStoreIndex.from_vector_store(
 
 # Grab 5 search results
 retriever = VectorIndexRetriever(
-    index=vector_index, similarity_top_k=15)
+    index=vector_index, similarity_top_k=5)
 
 memory = ChatMemoryBuffer.from_defaults(token_limit=1500)
 
+class CustomNodePostprocessor(BaseNodePostprocessor, BaseModel):
+    company_name: str = Field(..., description="The company name to filter nodes by")
+    
+    @root_validator(pre=True)
+    def set_company_name(cls, values):
+        filter_query = values.get('filter_query', '').lower()
+        values['company_name'] = filter_query  # Set company_name dynamically
+        return values
+
+    def __init__(self, **kwargs):
+        # print(filter_query)
+        # The `filter_query` will be handled by the root_validator
+        super().__init__(**kwargs)
+
+    def _postprocess_nodes(
+        self, nodes: List[NodeWithScore], query_bundle: Optional[QueryBundle] = None
+    ) -> List[NodeWithScore]:
+        print(query_bundle)
+        c_name=handle_chat_for_company_name(str(query_bundle))
+        print(F"company name: {c_name}")
+        # Filter nodes based on the company_name metada
+        for node in nodes:
+            print(c_name.strip('"').lower() , node.node.metadata["company_name"].lower())
+        filtered_nodes = [
+            node for node in nodes
+            if c_name.strip('"').lower() in node.node.metadata["company_name"].lower()
+        ]
+        print(f"before filtering len {len(filtered_nodes)} nodes")
+        return filtered_nodes
+
+
+custom_postprocessor =  CustomNodePostprocessor(filter_query="apple")
+
 chat_engine = ContextChatEngine(retriever=retriever,
                                 memory=memory,
-
+                                node_postprocessors=[custom_postprocessor],
                                 prefix_messages=[],
                                 llm=OpenAI(
                                     model="gpt-4o-mini", system_prompt="""
@@ -231,6 +270,7 @@ This system prompt ensures that responses are highly relevant, accurate, and con
 
 # This system prompt ensures that responses are highly relevant, accurate, and confined to the parameters you've set. Let me know if you’d like further refinement!
 #     """, temperature=0.5))
+
 
 
 def handle_chat(query):
