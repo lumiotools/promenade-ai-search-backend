@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from typing import List
 import pandas as pd
 import json
+from enum import Enum
 
 load_dotenv()
 client = OpenAI(
@@ -41,6 +42,11 @@ You are a specialized AI tasked with extracting only the company name from a giv
 "Apple"
 """
 
+# Enum for QueryType
+class QueryType(Enum):
+    IR = "IR"
+    SEC_FILINGS = "SEC_FILINGS"
+    OTHERS = "OTHERS"
 
 class CompanyDetails(BaseModel):
     company_name: str
@@ -48,7 +54,7 @@ class CompanyDetails(BaseModel):
     
 class ResponseFormat(BaseModel):
     companies: List[CompanyDetails]
-    query_type: str
+    query_type: QueryType
     
     # Query Type only IR, SEC_FILINGS, OTHERS
     
