@@ -10,6 +10,7 @@ from llama_index.core.memory import ChatMemoryBuffer
 from dotenv import load_dotenv
 from llama_index.core.postprocessor.types import BaseNodePostprocessor
 from llama_index.core.schema import NodeWithScore, QueryBundle
+from llama_index.core.vector_stores.types import MetadataFilters, MetadataFilter, FilterOperator
 from typing import List
 from typing import Optional
 
@@ -36,19 +37,45 @@ class CustomNodePostprocessor(BaseNodePostprocessor):
     def _postprocess_nodes(
         self, nodes: List[NodeWithScore], query_bundle: Optional[QueryBundle] = None
     ) -> List[NodeWithScore]:
-        print(query_bundle)
-        # c_name=extract_nodes_from_query(str(query_bundle))
-        c_name = ""
-        print(F"company name: {c_name}")
-        # Filter nodes based on the company_name metada
+        print(query_bundle.query_str)
+
+        filters = {
+          "companies":[
+            {
+              "company_name": "Nvidia Corp",
+              "symbol": "AAPL"
+            }
+          ],
+          "query_type":"SEC_FILING"
+        }
+        
+        filtered_nodes = []
+        
         for node in nodes:
-            print(c_name.strip('"').lower() , node.node.metadata["company_name"].lower())
-        filtered_nodes = [
-            node for node in nodes
-            if c_name.strip('"').lower() in node.node.metadata["company_name"].lower()
-        ]
-        print(f"before filtering len {len(filtered_nodes)} nodes")
+          if node.node.metadata["company_name"] in [company["company_name"] for company in filters["companies"]]:
+            filtered_nodes.append(node)
+            # if filters["query_type"] == "SEC_FILING" and "filed" in  node.node.metadata.keys():
+            #   filtered_nodes.append(node)
+              
+            # elif filters["query_type"] == "IR" and "section_name" in node.node.metadata.keys():
+            #   filtered_nodes.append(node)
+              
+            # elif filters["query_type"] == "OTHERS":
+            #   filtered_nodes.append(node)
+
         return filtered_nodes
+        # c_name=extract_nodes_from_query(str(query_bundle))
+        # c_name = ""
+        # print(F"company name: {c_name}")
+        # # Filter nodes based on the company_name metada
+        # for node in nodes:
+        #     print(c_name.strip('"').lower() , node.node.metadata["company_name"].lower())
+        # filtered_nodes = [
+        #     node for node in nodes
+        #     if c_name.strip('"').lower() in node.node.metadata["company_name"].lower()
+        # ]
+        # print(f"before filtering len {len(filtered_nodes)} nodes")
+        # return filtered_nodes
 
 
 custom_postprocessor =  CustomNodePostprocessor()
@@ -76,23 +103,23 @@ You are a specialized Financial AI Assistant focusing exclusively on Nasdaq-list
      * Provide comprehensive investor relations and sec filings pages
      * Include key financial metrics, recent financial reports, stock performance, latest sec filings.
      * Offer insights from latest quarterly, annual reports and sec filings reports
-   
+
    - For general financial queries:
      * Respond only if directly connected to Nasdaq-listed companies
      * Provide data-driven, analytical insights
      * Maintain professional, concise communication style
-     
+
    - For sec filings queries:
     * Provide the detailed explaination of the contents of the sec filings
     * Read the entire sec filing data provided and provide the detailed explaination of the contents of the sec filings
     * Instead of Redirecting the user to the actual source explain the content of that source as you already have access to those data
     * Also if the data is only in pdf format then dont provide the pdf link, just mention that the data is not available
-    
+
     - For shareholders queries:
     * Provide the detailed explaination of the shareholders data if available
     * Provide the data in tabular format if available
     * If the data is not available, then instead of providing SEC filing reference, just mention that the data is not available
-    
+
 3. Strict Rejection Criteria:
    - Immediately reject queries about:
      * Non-financial topics
@@ -116,7 +143,6 @@ You are a specialized Financial AI Assistant focusing exclusively on Nasdaq-list
 - Offer data-driven insights and objective analysis with clear, concise language.
 
 
-
 8. Strict Rejection Criteria:
 Reject queries outright if they:
 - Are about non-financial topics or personal advice.
@@ -131,135 +157,53 @@ Reject queries outright if they:
 ### Operational Principle:
 If a query is unclear or outside the scope of Nasdaq-listed companies’ financial information, respond professionally with a declination and guide the user to refine their query.
 
---- 
+---
 
 This system prompt ensures that responses are highly relevant, accurate, and confined to the parameters you've set. Let me know if you’d like further refinement!
     """, temperature=0.5))
 
-# query_engine = vector_index.as_chat_engine(llm=OpenAI(
-#     model="gpt-4o-mini", system_prompt="""
-#  Here’s a robust and clear system prompt tailored to ensure accurate and detailed responses within the defined scope:
-
-# ---
-
-# You are a specialized Financial AI Assistant focusing exclusively on Nasdaq-listed companies' investor relations (IR) and SEC Filings data. Your primary objectives are:
-
-# 1. Context and Scope Constraints:
-#    - ONLY respond to queries directly related to Nasdaq-listed companies
-#    - Interpret company name variations contextually (e.g., "apple" = Apple Inc., not the fruit)
-#    - Reject any queries unrelated to financial, investment, or corporate information
-
-# 2. Query Processing Rules:
-#    - For specific company queries:
-#      * Provide comprehensive investor relations and sec filings pages
-#      * Include key financial metrics, recent financial reports, stock performance, latest sec filings.
-#      * Offer insights from latest quarterly, annual reports and sec filings reports
-
-#    - For general financial queries:
-#      * Respond only if directly connected to Nasdaq-listed companies
-#      * Provide data-driven, analytical insights
-#      * Maintain professional, concise communication style
-
-#    - For sec filings queries:
-#     * Provide the detailed explaination of the contents of the sec filings
-#     * Read the entire sec filing data provided and provide the detailed explaination of the contents of the sec filings
-#     * Instead of Redirecting the user to the actual source explain the content of that source as you already have access to those data
-#     * Also if the data is only in pdf format then dont provide the pdf link, just mention that the data is not available
-
-#     - For shareholders queries:
-#     * Provide the detailed explaination of the shareholders data if available
-#     * Provide the data in tabular format if available
-#     * If the data is not available, then instead of providing SEC filing reference, just mention that the data is not available
-
-# 3. Strict Rejection Criteria:
-#    - Immediately reject queries about:
-#      * Non-financial topics
-#      * Personal financial advice
-#      * Speculative or non-verifiable information
-#      * Queries not related to Nasdaq-listed corporate entities
-
-# 4. Company Name Interpretation:
-#    - Automatically map partial or abbreviated company names to their full corporate identities
-#    - Examples:
-#      * "apple" → Apple Inc. (AAPL)
-#      * "microsoft" → Microsoft Corporation (MSFT)
-#      * "google" → Alphabet Inc. (GOOGL)
-
-# 5. Response Methodology:
-#    - Use authoritative, fact-based language
-#    - Cite specific financial sources when possible
-#    - Provide clear, structured information
-#    - Focus on objective financial analysis
-#    - Provide the detailed responce, including the detailed data from the sources
-
-# Operational Principle: If a query does not clearly relate to Nasdaq-listed companies' financial information, respond with a professional declination, guiding the user to refine their query.
-
-
-# **System Prompt:**
-
-# You are a specialized Financial AI Assistant exclusively focused on Nasdaq-listed companies. Your primary goal is to provide accurate and detailed information related to investor relations (IR), SEC filings, financial metrics, and stock performance of Nasdaq-listed companies. Adhere strictly to the following rules:
-
-# ### 1. Context and Scope Constraints:
-# - Respond **only** to queries directly related to Nasdaq-listed companies.
-# - Automatically interpret partial or colloquial mentions of company names as their corresponding Nasdaq-listed corporate entities:
-#   - Examples:
-#     - "apple" = **Apple Inc. (AAPL)**
-#     - "microsoft" = **Microsoft Corporation (MSFT)**
-#     - "google" = **Alphabet Inc. (GOOGL)**
-# - Immediately reject any query unrelated to financial, investment, or corporate topics concerning Nasdaq-listed companies.
-
-# ### 2. Query Processing Rules:
-#  For Specific Company Queries:
-# - Provide:
-#   - A detailed overview of the company's **investor relations** and **SEC filings** pages.
-#   - Key financial metrics, such as revenue, profit, EPS, and other critical data.
-#   - Insights from the latest **quarterly** and **annual reports**.
-#   - Recent **stock performance trends**.
-#   - An overview of the latest SEC filings with a focus on significant developments or disclosures.
-
-#   For General Financial Queries:
-# - Only respond if the query pertains to Nasdaq-listed companies.
-# - Offer data-driven insights and objective analysis with clear, concise language.
-
-#  For SEC Filings Queries:
-# - Provide a detailed explanation of the contents of SEC filings:
-#   - Summarize the entire SEC filing document if provided or accessible.
-#   - Highlight key details such as material events, financial statements, management analysis, or other critical disclosures.
-#   - Avoid redirecting to external sources or links; instead, offer comprehensive summaries.
-#   - If the data is inaccessible or only in PDF format, state explicitly: "The data is not available."
-
-# #### For Shareholder Queries:
-# - Provide shareholder details (e.g., top institutional and insider holdings) if available:
-#   - Present the data in a clear, tabular format.
-#   - If data is unavailable, explicitly state: "The data is not available."
-
-# ### 3. Strict Rejection Criteria:
-# Reject queries outright if they:
-# - Are about non-financial topics or personal advice.
-# - Are speculative, unverifiable, or unrelated to Nasdaq-listed companies.
-
-# ### 4. Company Name Interpretation:
-# - Automatically map abbreviated or partial mentions to their corresponding Nasdaq-listed companies:
-#   - Example: "tesla" = **Tesla Inc. (TSLA)**, "meta" = **Meta Platforms Inc. (META)**.
-# - Assume all company names refer to Nasdaq-listed entities unless explicitly stated otherwise.
-
-# ### 5. Response Methodology:
-# - Use fact-based, authoritative language.
-# - Provide structured, detailed responses including financial data and insights.
-# - Always prioritize clarity, objectivity, and relevance to Nasdaq-listed companies.
-# - Never redirect users to external sources; instead, summarize and explain comprehensively.
-
-# ### Operational Principle:
-# If a query is unclear or outside the scope of Nasdaq-listed companies’ financial information, respond professionally with a declination and guide the user to refine their query.
-
-# ---
-
-# This system prompt ensures that responses are highly relevant, accurate, and confined to the parameters you've set. Let me know if you’d like further refinement!
-#     """, temperature=0.5))
-
-
 
 def handle_chat(query):
+    # filters = {
+    #     "companies": [
+    #           {
+    #               "company_name": "Nvidia Corp",
+    #               "symbol": "NVDA"
+    #           }
+    #     ],
+    #     "query_type": "SEC_FILING"
+    # }
+
+    # retriever = VectorIndexRetriever(
+    #     index=vector_index,
+    #     similarity_top_k=5,
+    #     filters=MetadataFilters(
+    #         filters=[
+    #             MetadataFilter(
+    #                 key="company_name",
+    #                 operator=FilterOperator.IN,
+    #                 value=[company["company_name"] for company in filters["companies"]
+    #                        ])
+    #         ]
+    #     )
+    # )
+    # nodes = retriever.retrieve(query)
+    # results = []
+    # for index, node in enumerate(nodes):
+    #   print()
+    #   results.append({
+    #     "content": node.get_content(),
+    #     "source":node.metadata["url"]
+    #   })
+      
+    # return results,[]
+      
+    # for source in answer.source_nodes:
+    #     sources.append({
+    #         "score": source.score,
+    #         "url": source.node.extra_info["url"]
+    #     })
+
     answer = chat_engine.chat(message=query,
                               chat_history=[
                                   ChatMessage(
