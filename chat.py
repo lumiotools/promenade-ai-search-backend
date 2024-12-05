@@ -14,6 +14,7 @@ from llama_index.core.vector_stores.types import MetadataFilters, MetadataFilter
 from typing import List
 from typing import Optional
 from extract_query_details import extract_query_details
+from nodes_processing import process_nodes
 import json
 
 load_dotenv()
@@ -142,46 +143,54 @@ If a query is unclear or outside the scope of Nasdaq-listed companies’ financi
 
 
 def handle_chat(query):
-    # filters = {
-    #     "companies": [
-    #           {
-    #               "company_name": "Nvidia Corp",
-    #               "symbol": "NVDA"
-    #           }
-    #     ],
-    #     "query_type": "SEC_FILING"
-    # }
+    filters =extract_query_details(query)
 
-    # retriever = VectorIndexRetriever(
-    #     index=vector_index,
-    #     similarity_top_k=5,
-    #     filters=MetadataFilters(
-    #         filters=[
-    #             MetadataFilter(
-    #                 key="company_name",
-    #                 operator=FilterOperator.IN,
-    #                 value=[company["company_name"] for company in filters["companies"]
-    #                        ])
-    #         ]
-    #     )
-    # )
-    # nodes = retriever.retrieve(query)
-    # results = []
-    # for index, node in enumerate(nodes):
-    #   print()
-    #   results.append({
-    #     "content": node.get_content(),
-    #     "source":node.metadata["url"]
+    retriever = VectorIndexRetriever(
+        index=vector_index,
+        similarity_top_k=15,
+        filters=MetadataFilters(
+            filters=[
+                MetadataFilter(
+                    key="company_name",
+                    operator=FilterOperator.IN,
+                    value=[company["company_name"] for company in filters["companies"]
+                           ]),
+                
+            ]
+        )
+    )
+    nodes = retriever.retrieve(query)
+    
+    results = []
+    for index, node in enumerate(nodes):
+      
+      # if filters["query_type"] == "SEC_FILINGS" and "filed" not in  node.node.metadata.keys():
+      #   continue
+      
+      # if filters["query_type"] == "IR" and "section_name" not in node.node.metadata.keys():
+      #   continue
+        
+      results.append({
+        "content": node.get_content(),
+        "source":node.metadata["url"]
+      })
+      
+    sorted_nodes= process_nodes(filters["companies"][0]["company_name"],query,results)
+      
+    # final = []
+    
+    # for i,node in enumerate(results):
+    #   final.append({
+    #     "original":node,
+    #     "filtered":sorted_nodes["contents"][i]["content"]
     #   })
       
-    # return results,[]
+    return {"original":results, "sorted":sorted_nodes},[]
       
-    # for source in answer.source_nodes:
-    #     sources.append({
-    #         "score": source.score,
-    #         "url": source.node.extra_info["url"]
-    #     })
+   
 
+
+def handle_chat_v1(query):
     answer = chat_engine.chat(message=query,
                               chat_history=[
                                   ChatMessage(
