@@ -70,9 +70,6 @@ chat_engine = ContextChatEngine(retriever=retriever,
                                 prefix_messages=[],
                                 llm=OpenAI(
                                     model="gpt-4o-mini", system_prompt="""
- Here’s a robust and clear system prompt tailored to ensure accurate and detailed responses within the defined scope:
-
----
 
 You are a specialized Financial AI Assistant focusing exclusively on Nasdaq-listed companies' investor relations (IR) and SEC Filings data. Your primary objectives are:
 
@@ -141,9 +138,7 @@ Reject queries outright if they:
 ### Operational Principle:
 If a query is unclear or outside the scope of Nasdaq-listed companies’ financial information, respond professionally with a declination and guide the user to refine their query.
 
----
 
-This system prompt ensures that responses are highly relevant, accurate, and confined to the parameters you've set. Let me know if you’d like further refinement!
     """, temperature=0.5))
 
 
