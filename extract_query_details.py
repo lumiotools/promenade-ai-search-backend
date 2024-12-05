@@ -69,16 +69,12 @@ def extract_query_details(query):
     )
 
     res = chat_completion.choices[0].message.parsed
-    # company_name = res.company_name
-    # symbol = res.symbol
-    # query_type = res.query_type
-
-    print(res)
-
-    return "Apple Inc"
-    # res=chat_completion.choices[0].message.content
-    # print(f"gpt res {chat_completion.choices[0].message.content}")
-    # if res =="No company name found.":
-    #     return ""
-    # else:
-    #     return res
+    companies = res.companies
+    query_type = res.query_type.value
+    
+    filters = {
+        "companies": [company.model_dump() for company in companies],
+        "query_type": query_type
+    }
+    
+    return filters

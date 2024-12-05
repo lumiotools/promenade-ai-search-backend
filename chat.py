@@ -13,6 +13,8 @@ from llama_index.core.schema import NodeWithScore, QueryBundle
 from llama_index.core.vector_stores.types import MetadataFilters, MetadataFilter, FilterOperator
 from typing import List
 from typing import Optional
+from extract_query_details import extract_query_details
+import json
 
 load_dotenv()
 
@@ -39,15 +41,9 @@ class CustomNodePostprocessor(BaseNodePostprocessor):
     ) -> List[NodeWithScore]:
         print(query_bundle.query_str)
 
-        filters = {
-          "companies":[
-            {
-              "company_name": "Nvidia Corp",
-              "symbol": "AAPL"
-            }
-          ],
-          "query_type":"SEC_FILING"
-        }
+        filters = extract_query_details(query_bundle.query_str)
+        
+        print(json.dumps(filters))
         
         filtered_nodes = []
         
@@ -64,18 +60,6 @@ class CustomNodePostprocessor(BaseNodePostprocessor):
             #   filtered_nodes.append(node)
 
         return filtered_nodes
-        # c_name=extract_nodes_from_query(str(query_bundle))
-        # c_name = ""
-        # print(F"company name: {c_name}")
-        # # Filter nodes based on the company_name metada
-        # for node in nodes:
-        #     print(c_name.strip('"').lower() , node.node.metadata["company_name"].lower())
-        # filtered_nodes = [
-        #     node for node in nodes
-        #     if c_name.strip('"').lower() in node.node.metadata["company_name"].lower()
-        # ]
-        # print(f"before filtering len {len(filtered_nodes)} nodes")
-        # return filtered_nodes
 
 
 custom_postprocessor =  CustomNodePostprocessor()
