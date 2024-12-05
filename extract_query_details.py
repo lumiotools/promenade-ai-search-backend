@@ -52,17 +52,17 @@ Copy code
 """
 
 # Enum for QueryType
-class QueryType(Enum):
-    IR = "IR"
-    SEC_FILINGS = "SEC_FILINGS"
-    OTHERS = "OTHERS"
+# class QueryType(Enum):
+#     IR = "IR"
+#     SEC_FILINGS = "SEC_FILINGS"
+#     OTHERS = "OTHERS"
 
 class CompanyDetails(BaseModel):
     company_name: str
     
 class ResponseFormat(BaseModel):
     companies: List[CompanyDetails]
-    query_type: QueryType
+    query_type: str  # Changed from QueryType to str
     
     # Query Type only IR, SEC_FILINGS, OTHERS
     
@@ -78,7 +78,7 @@ def extract_query_details(query):
 
     res = chat_completion.choices[0].message.parsed
     companies = res.companies
-    query_type = res.query_type.value
+    query_type = res.query_type
     
     filters = {
         "companies": [company.model_dump() for company in companies],
@@ -86,3 +86,9 @@ def extract_query_details(query):
     }
     
     return filters
+
+
+# FOR TESTING PURPOSES
+# if __name__ == "__main__":
+#     query = "What is Apple's price-to-earnings ratio compared to Microsoft's and Google's?"
+#     print(extract_query_details(query))
