@@ -1,3 +1,4 @@
+import urllib.parse
 from pinecone import Pinecone
 from llama_index.core import VectorStoreIndex
 from llama_index.core.retrievers import VectorIndexRetriever
@@ -14,7 +15,8 @@ from llama_index.core.vector_stores.types import MetadataFilters, MetadataFilter
 from typing import List
 from typing import Optional
 from extract_query_details import extract_query_details
-from nodes_processing import process_nodes
+from post_processors.re_rank_nodes import re_rank_nodes
+from post_processors.clean_content import clean_contents
 import json
 
 load_dotenv()
@@ -161,31 +163,44 @@ def handle_chat(query):
     )
     nodes = retriever.retrieve(query)
     
-    results = []
-    for index, node in enumerate(nodes):
-      
-      # if filters["query_type"] == "SEC_FILINGS" and "filed" not in  node.node.metadata.keys():
-      #   continue
-      
-      # if filters["query_type"] == "IR" and "section_name" not in node.node.metadata.keys():
-      #   continue
+    result_nodes = []
+    for index, node in enumerate(nodes):      
         
-      results.append({
+      result_nodes.append({
         "content": node.get_content(),
-        "source":node.metadata["url"]
+        "node_id":node.node.node_id,
+        "source":node.node.metadata["url"]
       })
       
-    sorted_nodes= process_nodes(filters["companies"][0]["company_name"],query,results)
-      
-    # final = []
+    re_ranked_nodes= re_rank_nodes(filters["companies"][0]["company_name"],query,result_nodes)
     
-    # for i,node in enumerate(results):
-    #   final.append({
-    #     "original":node,
-    #     "filtered":sorted_nodes["contents"][i]["content"]
-    #   })
+    for node in re_ranked_nodes:
+      print(node["node_id"])
       
-    return {"original":results, "sorted":sorted_nodes},[]
+    cleaned_nodes = clean_contents(query,re_ranked_nodes)
+    
+    print()
+    
+    final_nodes = []
+    
+    for node in re_ranked_nodes:
+      for item in result_nodes:
+        if item["node_id"] == node["node_id"]:
+          node["content"] = item["content"]
+          node["source"] = item["source"]
+          break
+      
+      for item in cleaned_nodes:
+        if item["node_id"] == node["node_id"]:
+          node["cleaned_content"] = item["cleaned_content"]
+          break
+      
+      final_nodes.append({
+        "content": node["cleaned_content"],
+        "source":node["source"]
+      })
+      
+    return final_nodes,[]
       
    
 
