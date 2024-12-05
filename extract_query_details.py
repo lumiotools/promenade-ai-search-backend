@@ -22,11 +22,20 @@ You are a specialized AI tasked with extracting only the company name from a giv
 
 **Memory:**
 
+You have access to a list of company symbols and their corresponding formal company names, provided in the following format:
+
+json
+Copy code
+
+
 {json.dumps(company_json)}
 
 
 **Instructions:**
-
+- Use Memory Only:
+    - Identify and extract company names solely based on the provided memory. 
+    - Do not infer or use any external knowledge or context outside of this memory.
+    - If no company from the memory matches the text, respond with: "No company name found."
 - Use the memory to access the company names with their corresponding symbols.
 - Identify and extract the exact name of the company from the query.
 - If the company is mentioned by an abbreviation or partial name (e.g., "apple", "tesla", "microsoft"), interpret it as the full formal name (e.g., "Apple", "Tesla", "Microsoft Corporation").
