@@ -49,15 +49,14 @@ class CustomNodePostprocessor(BaseNodePostprocessor):
         
         for node in nodes:
           if node.node.metadata["company_name"] in [company["company_name"] for company in filters["companies"]]:
-            filtered_nodes.append(node)
-            # if filters["query_type"] == "SEC_FILING" and "filed" in  node.node.metadata.keys():
-            #   filtered_nodes.append(node)
+            if filters["query_type"] == "SEC_FILINGS" and "filed" in  node.node.metadata.keys():
+              filtered_nodes.append(node)
               
-            # elif filters["query_type"] == "IR" and "section_name" in node.node.metadata.keys():
-            #   filtered_nodes.append(node)
+            elif filters["query_type"] == "IR" and "section_name" in node.node.metadata.keys():
+              filtered_nodes.append(node)
               
-            # elif filters["query_type"] == "OTHERS":
-            #   filtered_nodes.append(node)
+            elif filters["query_type"] == "OTHERS":
+              filtered_nodes.append(node)
 
         return filtered_nodes
 
