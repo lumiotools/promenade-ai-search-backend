@@ -19,13 +19,13 @@ Extraction Guidelines:
 3. Extract only the minimal, essential text needed to address the query
 4. Preserve the original wording exactly
 5. Return the shortest possible snippet that fully answers the question
-6. If the answer is not present in the text, return the most relevant segment
+6. If the answer is not found in the text, return the most relevant segment related to the query
 
 Removal Criteria:
 - Delete all headers (Company:, Section:, Title:, URL:)
 - Eliminate introductory or surrounding text
 - Keep only the core, direct answer
-- If no exact mathcing snippet found, return the most relevant segment
+- If no exact matching snippet found based on user query, return the most relevant segment from the content
 
 Core Objective: Surgically extract the most concise, relevant text snippet that comprehensively answers the user's query.
 

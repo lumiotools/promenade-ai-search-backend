@@ -35,7 +35,7 @@ Filtering and Reranking Guidelines:
     - Are clearly spam or nonsensical content
     - Retain nodes with even partial or tangential relevance
     - Preserve nodes that might provide supplementary or contextual information
-    - Dont check strictly
+    - Dont check too strictly for the exact match of the query in the node content
 
 4. *Intelligent Reranking Methodology*:
    - Assign a nuanced relevance score to each node
