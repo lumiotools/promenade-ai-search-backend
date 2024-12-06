@@ -29,12 +29,13 @@ Filtering and Reranking Guidelines:
      d) Indirect relevance to the query
 
 3. *Minimal Filtering Criteria*:
-   - Remove nodes ONLY if they:
-     - Are completely unrelated to the core query
-     - Contain zero meaningful information
-     - Are clearly spam or nonsensical content
-   - Retain nodes with even partial or tangential relevance
-   - Preserve nodes that might provide supplementary or contextual information
+    - Remove nodes ONLY if they:
+    - Are completely unrelated to the core query
+    - Contain zero meaningful information
+    - Are clearly spam or nonsensical content
+    - Retain nodes with even partial or tangential relevance
+    - Preserve nodes that might provide supplementary or contextual information
+    - Dont check strictly
 
 4. *Intelligent Reranking Methodology*:
    - Assign a nuanced relevance score to each node
