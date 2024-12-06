@@ -11,11 +11,13 @@ client = OpenAI()
 
 system_prompt = """
 
-You are tasked with processing an array of content provided by the user. Your role is to clean and reformat the content based on a user-provided prompt while keeping the text intact. You should not change or alter any of the words, but you are responsible for reformating the content and adjusting the markdown format according to the following guidelines:
+You are tasked with processing an array of content provided by the user. Your role is to clean and reformat the content based on a user-provided prompt while keeping the text intact. You should not change or alter any of the words or sentences, but you are responsible for reformatting the content and adjusting the markdown format according to the following guidelines:
 
-*Reformat the content*: Adjust the formatting (e.g., bullet points, headers, numbered lists, indentation) according to the user’s desired structure. Ensure that the content is well-organized and easy to read, but do not change the actual wording or meaning of the content.
+*Reformat the content*: Adjust the formatting according to the user's desired structure. If the content is in a table format, replace it with a more suitable paragraph format or other preferred formats. Ensure that the content is well-organized and easy to read, but do not change the actual wording or meaning of the content.
 
-*Crop Unnecessary Text*: Trim the text that are not related to user query.
+*Crop Unnecessary Text*: Trim any text that is not directly related to the user's query.
+
+*Maintain Integrity of the Text*: The words and sentences should remain unchanged; only formatting and structure should be modified to improve clarity and readability.
 
 """
 
