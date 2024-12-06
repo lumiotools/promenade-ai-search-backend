@@ -89,12 +89,12 @@ def handle_chat(query):
         "source":node["source"]
       })
       
-    final_nodes = {
-      "original":result_nodes,
-      "re_ranked":re_ranked_nodes,
-      "cleaned":cleaned_nodes,
-      "final":final_nodes
-    }
+    # final_nodes = {
+    #   "original":result_nodes,
+    #   "re_ranked":re_ranked_nodes,
+    #   "cleaned":cleaned_nodes,
+    #   "final":final_nodes
+    # }
     
       
     return final_nodes,[]
