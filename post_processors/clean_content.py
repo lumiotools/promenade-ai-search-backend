@@ -32,7 +32,7 @@ def clean_contents(query,re_ranked_nodes):
     chat_completion = client.beta.chat.completions.parse(
         model="gpt-4o-mini",
         messages=[{
-            "role": "system", "content": system_prompt
+            "role": "system", "content": system_prompt.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
             },
              {"role": "user", 
               "content": f"""
@@ -43,16 +43,14 @@ def clean_contents(query,re_ranked_nodes):
               
               These are my nodes:
               {json.dumps(re_ranked_nodes)}
-              """
+              """.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
             }
                 
     ],
         response_format=ResponseFormat
     )
+    
+    res = chat_completion.choices[0].message.model_dump()["content"]
 
-    res = chat_completion.choices[0].message.parsed
-    
-    
-    
-    return res.model_dump()["nodes"]
+    return json.loads(res)["nodes"]
     

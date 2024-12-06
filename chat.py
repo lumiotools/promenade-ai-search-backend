@@ -34,11 +34,12 @@ vector_index = VectorStoreIndex.from_vector_store(
 
 
 def handle_chat(query):
+  try:
     filters =extract_query_details(query)
 
     retriever = VectorIndexRetriever(
         index=vector_index,
-        similarity_top_k=15,
+        similarity_top_k=20,
         filters=MetadataFilters(
             filters=[
                 MetadataFilter(
@@ -51,6 +52,11 @@ def handle_chat(query):
         )
     )
     nodes = retriever.retrieve(query)
+    
+    for node in nodes:
+      print(node.node.node_id)
+      
+    print()
     
     result_nodes = []
     for index, node in enumerate(nodes):      
@@ -83,8 +89,15 @@ def handle_chat(query):
         if item["node_id"] == node["node_id"]:
           node["cleaned_content"] = item["cleaned_content"]
           break
+        
+      if not "cleaned_content" in node.keys():
+        continue
+      
+      if any(final_node["node_id"] == node["node_id"] for final_node in final_nodes):
+        continue
       
       final_nodes.append({
+        "node_id":node["node_id"],
         "content": node["cleaned_content"],
         "source":node["source"]
       })
@@ -98,6 +111,9 @@ def handle_chat(query):
     
       
     return final_nodes,[]
+  except Exception as e:
+    print(e)
+    return [],[]
       
 
 # Grab 5 search results
