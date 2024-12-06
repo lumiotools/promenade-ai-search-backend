@@ -44,7 +44,7 @@ def re_rank_nodes(company_name,query,result_nodes):
               These are my nodes:
               {json.dumps(result_nodes)}
               
-              Based on this data, Re-rank my content and provide me the most relevant information in sorted way, also remove the nodes that are not related to the user query.
+              Based on the user query above, Re-rank my nodes such that the most relavent nodes are on top and the nodes that are not relevant to user query or not contain potential information are removed and provide response with the nodes in sorted order.
               """
             }
                 

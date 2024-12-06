@@ -11,11 +11,11 @@ client = OpenAI()
 
 system_prompt = """
 
-You are tasked with processing an array of content provided by the user. Your role is to clean and reformat the content based on a user-provided prompt while keeping the text intact. You should not change or alter any of the words, but you are responsible for cleaning the content and adjusting the markdown format according to the following guidelines:
+You are tasked with processing an array of content provided by the user. Your role is to clean and reformat the content based on a user-provided prompt while keeping the text intact. You should not change or alter any of the words, but you are responsible for reformating the content and adjusting the markdown format according to the following guidelines:
 
 *Reformat the content*: Adjust the formatting (e.g., bullet points, headers, numbered lists, indentation) according to the user’s desired structure. Ensure that the content is well-organized and easy to read, but do not change the actual wording or meaning of the content.
 
-*Crop Unnecessary Text*: Trim the text from top or bottom or middle that are not related to user query, just keep the focus of the text that answer the user query.
+*Crop Unnecessary Text*: Trim the text that are not related to user query.
 
 """
 
@@ -38,7 +38,7 @@ def clean_contents(query,re_ranked_nodes):
               "content": f"""
               This is the user query: {query}
               
-              For my below nodes contents, Clean their content by removing any unwanted information and provide me the cleaned content.
+              For my below nodes contents, reformat their content by applying and fixing the markdown and provide me the cleaned content.
               Preserve the order of the nodes and return in same order.
               
               These are my nodes:

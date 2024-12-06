@@ -32,6 +32,74 @@ vector_store = PineconeVectorStore(pinecone_index=pinecone_index)
 vector_index = VectorStoreIndex.from_vector_store(
     vector_store=vector_store, embed_model=OpenAIEmbedding(model="text-embedding-3-small"))
 
+
+def handle_chat(query):
+    filters =extract_query_details(query)
+
+    retriever = VectorIndexRetriever(
+        index=vector_index,
+        similarity_top_k=15,
+        filters=MetadataFilters(
+            filters=[
+                MetadataFilter(
+                    key="company_name",
+                    operator=FilterOperator.IN,
+                    value=[company["company_name"] for company in filters["companies"]
+                           ]),
+                
+            ]
+        )
+    )
+    nodes = retriever.retrieve(query)
+    
+    result_nodes = []
+    for index, node in enumerate(nodes):      
+        
+      result_nodes.append({
+        "content": node.get_content(),
+        "node_id":node.node.node_id,
+        "source":node.node.metadata["url"]
+      })
+      
+    re_ranked_nodes= re_rank_nodes(filters["companies"][0]["company_name"],query,result_nodes)
+    
+    for node in re_ranked_nodes:
+      print(node["node_id"])
+      
+    cleaned_nodes = clean_contents(query,re_ranked_nodes)
+    
+    print()
+    
+    final_nodes = []
+    
+    for node in re_ranked_nodes:
+      for item in result_nodes:
+        if item["node_id"] == node["node_id"]:
+          node["content"] = item["content"]
+          node["source"] = item["source"]
+          break
+      
+      for item in cleaned_nodes:
+        if item["node_id"] == node["node_id"]:
+          node["cleaned_content"] = item["cleaned_content"]
+          break
+      
+      final_nodes.append({
+        "content": node["cleaned_content"],
+        "source":node["source"]
+      })
+      
+    final_nodes = {
+      "original":result_nodes,
+      "re_ranked":re_ranked_nodes,
+      "cleaned":cleaned_nodes,
+      "final":final_nodes
+    }
+    
+      
+    return final_nodes,[]
+      
+
 # Grab 5 search results
 retriever = VectorIndexRetriever(
     index=vector_index, similarity_top_k=5)
@@ -142,68 +210,6 @@ If a query is unclear or outside the scope of Nasdaq-listed companies’ financi
 
 
     """, temperature=0.5))
-
-
-def handle_chat(query):
-    filters =extract_query_details(query)
-
-    retriever = VectorIndexRetriever(
-        index=vector_index,
-        similarity_top_k=15,
-        filters=MetadataFilters(
-            filters=[
-                MetadataFilter(
-                    key="company_name",
-                    operator=FilterOperator.IN,
-                    value=[company["company_name"] for company in filters["companies"]
-                           ]),
-                
-            ]
-        )
-    )
-    nodes = retriever.retrieve(query)
-    
-    result_nodes = []
-    for index, node in enumerate(nodes):      
-        
-      result_nodes.append({
-        "content": node.get_content(),
-        "node_id":node.node.node_id,
-        "source":node.node.metadata["url"]
-      })
-      
-    re_ranked_nodes= re_rank_nodes(filters["companies"][0]["company_name"],query,result_nodes)
-    
-    for node in re_ranked_nodes:
-      print(node["node_id"])
-      
-    cleaned_nodes = clean_contents(query,re_ranked_nodes)
-    
-    print()
-    
-    final_nodes = []
-    
-    for node in re_ranked_nodes:
-      for item in result_nodes:
-        if item["node_id"] == node["node_id"]:
-          node["content"] = item["content"]
-          node["source"] = item["source"]
-          break
-      
-      for item in cleaned_nodes:
-        if item["node_id"] == node["node_id"]:
-          node["cleaned_content"] = item["cleaned_content"]
-          break
-      
-      final_nodes.append({
-        "content": node["cleaned_content"],
-        "source":node["source"]
-      })
-      
-    return final_nodes,[]
-      
-   
-
 
 def handle_chat_v1(query):
     answer = chat_engine.chat(message=query,
