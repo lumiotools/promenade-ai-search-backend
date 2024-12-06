@@ -15,7 +15,7 @@ company_data = pd.read_csv("data/companies.csv")
 company_json = []
 for i in range(len(company_data)):
     company_json.append(
-        {"symbol": company_data.iloc[i]["Symbol"], "company_name": company_data.iloc[i]["Description"]})
+        {"company_name": company_data.iloc[i]["Description"]})
 
 system_prompt = f"""
 You are a specialized AI tasked with extracting only the company name from a given text. Your response should focus solely on identifying and returning the name of the company mentioned in the input, ignoring any irrelevant details or additional information. You should interpret partial or colloquial mentions as the full corporate entity (e.g., "apple" should be understood as "Apple").
@@ -52,18 +52,17 @@ Copy code
 """
 
 # Enum for QueryType
-class QueryType(Enum):
-    IR = "IR"
-    SEC_FILINGS = "SEC_FILINGS"
-    OTHERS = "OTHERS"
+# class QueryType(Enum):
+#     IR = "IR"
+#     SEC_FILINGS = "SEC_FILINGS"
+#     OTHERS = "OTHERS"
 
 class CompanyDetails(BaseModel):
     company_name: str
-    symbol: str
     
 class ResponseFormat(BaseModel):
     companies: List[CompanyDetails]
-    query_type: QueryType
+    query_type: str  # Changed from QueryType to str
     
     # Query Type only IR, SEC_FILINGS, OTHERS
     
@@ -79,7 +78,7 @@ def extract_query_details(query):
 
     res = chat_completion.choices[0].message.parsed
     companies = res.companies
-    query_type = res.query_type.value
+    query_type = res.query_type
     
     filters = {
         "companies": [company.model_dump() for company in companies],
@@ -87,3 +86,9 @@ def extract_query_details(query):
     }
     
     return filters
+
+
+# FOR TESTING PURPOSES
+# if __name__ == "__main__":
+#     query = "What is Apple's price-to-earnings ratio compared to Microsoft's and Google's?"
+#     print(extract_query_details(query))

@@ -1,3 +1,4 @@
+import urllib.parse
 from pinecone import Pinecone
 from llama_index.core import VectorStoreIndex
 from llama_index.core.retrievers import VectorIndexRetriever
@@ -14,6 +15,8 @@ from llama_index.core.vector_stores.types import MetadataFilters, MetadataFilter
 from typing import List
 from typing import Optional
 from extract_query_details import extract_query_details
+from post_processors.re_rank_nodes import re_rank_nodes
+from post_processors.clean_content import clean_contents
 import json
 
 load_dotenv()
@@ -28,6 +31,90 @@ vector_store = PineconeVectorStore(pinecone_index=pinecone_index)
 # Instantiate VectorStoreIndex object from your vector_store object
 vector_index = VectorStoreIndex.from_vector_store(
     vector_store=vector_store, embed_model=OpenAIEmbedding(model="text-embedding-3-small"))
+
+
+def handle_chat(query):
+  try:
+    filters =extract_query_details(query)
+
+    retriever = VectorIndexRetriever(
+        index=vector_index,
+        similarity_top_k=20,
+        filters=MetadataFilters(
+            filters=[
+                MetadataFilter(
+                    key="company_name",
+                    operator=FilterOperator.IN,
+                    value=[company["company_name"] for company in filters["companies"]
+                           ]),
+                
+            ]
+        )
+    )
+    nodes = retriever.retrieve(query)
+    
+    for node in nodes:
+      print(node.node.node_id)
+      
+    print()
+    
+    result_nodes = []
+    for index, node in enumerate(nodes):      
+        
+      result_nodes.append({
+        "content": node.get_content(),
+        "node_id":node.node.node_id,
+        "source":node.node.metadata["url"]
+      })
+      
+    re_ranked_nodes= re_rank_nodes(filters["companies"][0]["company_name"],query,result_nodes)
+    
+    for node in re_ranked_nodes:
+      print(node["node_id"])
+      
+    cleaned_nodes = clean_contents(query,re_ranked_nodes)
+    
+    print()
+    
+    final_nodes = []
+    
+    for node in re_ranked_nodes:
+      for item in result_nodes:
+        if item["node_id"] == node["node_id"]:
+          node["content"] = item["content"]
+          node["source"] = item["source"]
+          break
+      
+      for item in cleaned_nodes:
+        if item["node_id"] == node["node_id"]:
+          node["cleaned_content"] = item["cleaned_content"]
+          break
+        
+      if not "cleaned_content" in node.keys():
+        continue
+      
+      if any(final_node["node_id"] == node["node_id"] for final_node in final_nodes):
+        continue
+      
+      final_nodes.append({
+        "node_id":node["node_id"],
+        "content": node["cleaned_content"],
+        "source":node["source"]
+      })
+      
+    # final_nodes = {
+    #   "original":result_nodes,
+    #   "re_ranked":re_ranked_nodes,
+    #   "cleaned":cleaned_nodes,
+    #   "final":final_nodes
+    # }
+    
+      
+    return final_nodes,[]
+  except Exception as e:
+    print(e)
+    return [],[]
+      
 
 # Grab 5 search results
 retriever = VectorIndexRetriever(
@@ -140,48 +227,7 @@ If a query is unclear or outside the scope of Nasdaq-listed companies’ financi
 
     """, temperature=0.5))
 
-
-def handle_chat(query):
-    # filters = {
-    #     "companies": [
-    #           {
-    #               "company_name": "Nvidia Corp",
-    #               "symbol": "NVDA"
-    #           }
-    #     ],
-    #     "query_type": "SEC_FILING"
-    # }
-
-    # retriever = VectorIndexRetriever(
-    #     index=vector_index,
-    #     similarity_top_k=5,
-    #     filters=MetadataFilters(
-    #         filters=[
-    #             MetadataFilter(
-    #                 key="company_name",
-    #                 operator=FilterOperator.IN,
-    #                 value=[company["company_name"] for company in filters["companies"]
-    #                        ])
-    #         ]
-    #     )
-    # )
-    # nodes = retriever.retrieve(query)
-    # results = []
-    # for index, node in enumerate(nodes):
-    #   print()
-    #   results.append({
-    #     "content": node.get_content(),
-    #     "source":node.metadata["url"]
-    #   })
-      
-    # return results,[]
-      
-    # for source in answer.source_nodes:
-    #     sources.append({
-    #         "score": source.score,
-    #         "url": source.node.extra_info["url"]
-    #     })
-
+def handle_chat_v1(query):
     answer = chat_engine.chat(message=query,
                               chat_history=[
                                   ChatMessage(
