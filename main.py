@@ -16,6 +16,9 @@ app.add_middleware(
 class QueryModel(BaseModel):
     message: str
 
+@app.get("/")
+def read_root():
+    return {"status": "ok"}
 
 @app.post("/api/chat")
 def chat(body: QueryModel):
