@@ -9,7 +9,7 @@ from enum import Enum
 load_dotenv()
 client = OpenAI()
 
-# ... existing code ...
+
 system_prompt = """
 You are an advanced content filtering and reranking AI assistant. Your primary task is to carefully analyze and process an array of nodes based on a given user query.
 
@@ -73,7 +73,7 @@ Additional Guidance:
 - Prioritize information preservation
 - Consider potential indirect value of nodes
 """
-# ... existing code ...
+
 class Content(BaseModel):
     content: str
     node_id: str
@@ -92,14 +92,14 @@ def re_rank_nodes(company_name, query, result_nodes):
             {"role": "user",
              "content": f"""
               This is the company name: {company_name}
+              Please provide data only related to this company and ignore all other nodes.
               This is the user query: {query}
               These are my nodes:
               {json.dumps(result_nodes)}
 
-              Based on the user query above, Re-rank my nodes such that the most relavent nodes are on top and the nodes that are not relevant to user query or not contain the required information are removed and provide response with the nodes in sorted order.
+              Based on the user query above, Re-rank my nodes such that only the relevant nodes for the specified company are included, and remove all other irrelevant nodes.
               """.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
              }
-
         ],
         response_format=ResponseFormat
     )
