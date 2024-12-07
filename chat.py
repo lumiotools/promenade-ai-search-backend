@@ -40,16 +40,15 @@ def handle_chat(query):
     retriever = VectorIndexRetriever(
         index=vector_index,
         similarity_top_k=20,
-        filters=MetadataFilters(
-            filters=[
-                MetadataFilter(
-                    key="company_name",
-                    operator=FilterOperator.IN,
-                    value=[company["company_name"] for company in filters["companies"]
-                           ]),
-                
-            ]
-        )
+        # filters=MetadataFilters(
+        #     filters=[
+        #         MetadataFilter(
+        #             key="company_name",
+        #             operator=FilterOperator.IN,
+        #             value=[company["company_name"] for company in filters["companies"]
+        #                    ]),
+        #     ]
+        # )
     )
     nodes = retriever.retrieve(query)
     
@@ -170,8 +169,6 @@ You are a specialized Financial AI Assistant focusing exclusively on Nasdaq-list
      * Provide comprehensive investor relations and sec filings pages
      * Include key financial metrics, recent financial reports, stock performance, latest sec filings.
      * Offer insights from latest quarterly, annual reports and sec filings reports
-
-   - For general financial queries:
      * Respond only if directly connected to Nasdaq-listed companies
      * Provide data-driven, analytical insights
      * Maintain professional, concise communication style
@@ -240,6 +237,7 @@ def handle_chat_v1(query):
         Apple Inc. has recently provided key updates, financial reports, and announcements relevant to investors and the public:
 
         1. **Fourth Quarter Financial Results (FY 24):**  
+           - earnings call for the period , provided key insights into the company's financial performance and strategic direction. 
            - **Quarterly Revenue:** $94.9 billion, a **6% increase** year over year.  
            - **Diluted Earnings Per Share (EPS):** $0.97; adjusted EPS (excluding a one-time charge) was $1.64, reflecting a **12% increase** year over year.  
            - **Operating Cash Flow:** Nearly $27 billion generated during the quarter.  
@@ -249,7 +247,7 @@ def handle_chat_v1(query):
            - For more details, view the [press release](https://www.apple.com/newsroom/2024/10/apple-reports-fourth-quarter-results/).  
 
         2. **Recent SEC Filings:**  
-           - **Form 8-K (October 31, 2024):**  
+           - **Form 8-K (October 31, 2024):**
              - Includes the quarterly financial results press release and important updates for investors.  
              - Access the filing [here](https://app.quotemedia.com/data/downloadFiling?webmasterId=90423&ref=318679785&type=HTML&symbol=AAPL&cdn=f7eff34fbbd60ad782cbe98de2cc3d9e&companyName=Apple+Inc.&formType=8-K&formDescription=Current+report+pursuant+to+Section+13+or+15%28d%29&dateFiled=2024-10-31).  
            - **Form 10-K (November 1, 2024):**  

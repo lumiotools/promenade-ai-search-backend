@@ -9,8 +9,8 @@ from enum import Enum
 load_dotenv()
 client = OpenAI()
 
+# ... existing code ...
 system_prompt = """
-
 You are an advanced content filtering and reranking AI assistant. Your primary task is to carefully analyze and process an array of nodes based on a given user query.
 
 Filtering and Reranking Guidelines:
@@ -35,7 +35,7 @@ Filtering and Reranking Guidelines:
     - Are clearly spam or nonsensical content
     - Retain nodes with even partial or tangential relevance
     - Preserve nodes that might provide supplementary or contextual information
-    - Dont check strictly
+    - Don't check strictly
 
 4. *Intelligent Reranking Methodology*:
    - Assign a nuanced relevance score to each node
@@ -56,6 +56,7 @@ Filtering and Reranking Guidelines:
    - Sort nodes from most to least relevant
    - Include a broad range of potentially useful nodes
    - Preserve original `node_id` for each node
+   - Ensure that the response is at least 5 to 6 lines long.
 
 Processing Steps:
 1. Parse the user query with an open, inclusive approach
@@ -71,9 +72,8 @@ Additional Guidance:
 - When in doubt, retain the node
 - Prioritize information preservation
 - Consider potential indirect value of nodes
-
 """
-
+# ... existing code ...
 class Content(BaseModel):
     content: str
     node_id: str
