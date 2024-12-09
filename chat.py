@@ -66,7 +66,9 @@ def handle_chat(query):
       result_nodes.append({
         "content": node.get_content(),
         "node_id":node.node.node_id,
-        "source":node.node.metadata["url"]
+        "source":node.node.metadata["url"],
+        "filed":node.node.metadata["filed"] if "filed" in node.node.metadata.keys() else None,
+        "title":node.node.metadata["title"] if "title" in node.node.metadata.keys() else None,
       })
       
     print("Filtering")
