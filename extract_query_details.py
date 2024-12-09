@@ -15,7 +15,7 @@ company_data = pd.read_csv("data/companies.csv")
 company_json = []
 for i in range(len(company_data)):
     company_json.append(
-        {"company_name": company_data.iloc[i]["Description"]})
+        {"company_name": company_data.iloc[i]["Description"], "symbol": company_data.iloc[i]["Symbol"]})
 
 system_prompt = f"""
 You are a specialized AI tasked with extracting only the company name from a given text. Your response should focus solely on identifying and returning the name of the company mentioned in the input, ignoring any irrelevant details or additional information. You should interpret partial or colloquial mentions as the full corporate entity (e.g., "apple" should be understood as "Apple").
@@ -59,6 +59,7 @@ Copy code
 
 class CompanyDetails(BaseModel):
     company_name: str
+    symbol: str
     
 class ResponseFormat(BaseModel):
     companies: List[CompanyDetails]

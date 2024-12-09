@@ -11,80 +11,67 @@ client = OpenAI()
 
 
 system_prompt = """
-You are an advanced content filtering and reranking AI assistant. Your primary task is to carefully analyze and process an array of nodes based on a given user query.
+You are an advanced content reranking AI assistant. Your primary task is to carefully analyze and prioritize the filtered nodes based on a given user query.
 
-Filtering and Reranking Guidelines:
+Reranking Guidelines:
 
-1. *Nuanced Content Evaluation*:
-   - Conduct a deep semantic analysis of each node content
-   - Be judicious in identifying nodes to filter
-   - Focus on preserving potentially valuable information
-   - Remove only nodes that are definitively irrelevant or non-contributory
+1. *Relevance Assessment*:
+   - Conduct a deep semantic analysis of each node
+   - Evaluate nodes across multiple dimensions:
+     a) Direct relevance to the query
+     b) Depth of information
+     c) Comprehensiveness
+     d) Strategic value
+     e) Contextual alignment
 
-2. *Flexible Relevance Assessment*:
-   - Evaluate each node's relevance through multiple dimensions:
-     a) Partial semantic similarity
-     b) Contextual alignment
-     c) Potential informational value
-     d) Indirect relevance to the query
+2. *Scoring Methodology*:
+   - Assign a nuanced relevance score to each node based on:
+     a) Exactness of information match
+     b) Completeness of content
+     c) Depth of insights provided
+     d) Potential to answer key aspects of the query
+     e) Uniqueness of information
 
-3. *Minimal Filtering Criteria*:
-    - Remove nodes ONLY if they:
-    - Are completely unrelated to the core query
-    - Contain zero meaningful information
-    - Are clearly spam or nonsensical content
-    - Retain nodes with even partial or tangential relevance
-    - Preserve nodes that might provide supplementary or contextual information
-    - Don't check strictly
+3. *Prioritization Criteria*:
+   - Rank nodes highest that:
+     a) Directly answer the core query
+     b) Provide comprehensive information
+     c) Offer strategic or analytical insights
+     d) Contain no external dependencies
+     e) Are immediately comprehensible
 
-4. *Intelligent Reranking Methodology*:
-   - Assign a nuanced relevance score to each node
-   - Prioritize nodes based on:
-     - Direct relevance to query
-     - Depth of relevant information
-     - Potential to provide insights
-     - Contextual usefulness
+4. *Contextual Reranking*:
+   - Consider contextual nuances:
+     a) Broader implications of the content
+     b) Indirect but valuable information
+     c) Potential interconnections between nodes
+     d) Subtle but meaningful insights
 
-5. *Content and Identifier Integrity*:
-   - CRITICAL: Do not modify the text content of any retained node
-   - Preserve the `node_id` exactly as it was originally
-   - Minimize node removal
-   - Maintain the original content and identifiers
-
-6. *Output Requirements*:
-   - Return a carefully curated array of nodes
+5. *Output Requirements*:
    - Sort nodes from most to least relevant
-   - Include a broad range of potentially useful nodes
-   - Preserve original `node_id` for each node
-   - Ensure that the response is at least 5 to 6 lines long.
+   - Preserve original node identifiers
+   - Maintain the integrity of node content
+   - Provide a clear hierarchy of information
 
 Processing Steps:
-1. Parse the user query with an open, inclusive approach
-2. Lightly filter out only the most irrelevant nodes
-3. Analyze remaining nodes comprehensively
-4. Assign nuanced relevance scores
-5. Sort nodes based on relevance
-6. Return the reranked array, keeping most original nodes intact
+1. Parse the user query comprehensively
+2. Analyze each node's potential to address the query
+3. Assign detailed relevance scores
+4. Create a prioritized ranking of nodes
+5. Present nodes in order of their informational value
 
-Core Objective: Provide a thoughtful, comprehensive subset of nodes that addresses the user's query while preserving context, depth, and original node characteristics.
+Core Objective: Transform the filtered content into a precisely ranked, contextually rich information set that maximally addresses the user's information needs.
 
-Additional Guidance:
-- When in doubt, retain the node
-- Prioritize information preservation
-- Consider potential indirect value of nodes
+Guiding Principles:
+- Prioritize depth over breadth
+- Focus on direct, actionable information
+- Provide a nuanced, multi-dimensional ranking approach
 """
-
-class Content(BaseModel):
-    content: str
-    node_id: str
-
-class ResponseFormat(BaseModel):
-    nodes: List[Content]
 
 
 def re_rank_nodes(company_name, query, result_nodes):
 
-    chat_completion = client.beta.chat.completions.parse(
+    chat_completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{
             "role": "system", "content": system_prompt.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
@@ -92,18 +79,43 @@ def re_rank_nodes(company_name, query, result_nodes):
             {"role": "user",
              "content": f"""
               This is the company name: {company_name}
-              Please provide data only related to this company and ignore all other nodes.
               This is the user query: {query}
               These are my nodes:
               {json.dumps(result_nodes)}
 
-              Based on the user query above, Re-rank my nodes such that only the relevant nodes for the specified company are included, and remove all other irrelevant nodes.
+              Based on the user query above, Re-rank my nodes such that the most relevant nodes are at the top and the least relevant nodes are at the bottom.
               """.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
              }
         ],
-        response_format=ResponseFormat
+        response_format={
+        "type": "json_schema",
+        "json_schema": {
+            "name": "re_rank_nodes",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "nodes": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "cleaned_content": {"type": "string"},
+                                "node_id": {"type": "string"}
+                            },
+                            "required": ["cleaned_content", "node_id"],
+                            "additionalProperties": False
+                        }
+                    }
+                },
+                "required": ["nodes"],
+                "additionalProperties": False
+            },
+            "strict": True
+        }
+        },
+        temperature=0
     )
 
-    res = chat_completion.choices[0].message.model_dump()["content"]
+    res = chat_completion.choices[0].message.content
 
     return json.loads(res)["nodes"]

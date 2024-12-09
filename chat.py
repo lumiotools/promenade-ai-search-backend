@@ -15,6 +15,7 @@ from llama_index.core.vector_stores.types import MetadataFilters, MetadataFilter
 from typing import List
 from typing import Optional
 from extract_query_details import extract_query_details
+from post_processors.filter import filter_nodes
 from post_processors.re_rank_nodes import re_rank_nodes
 from post_processors.clean_content import clean_contents
 import json
@@ -36,19 +37,21 @@ vector_index = VectorStoreIndex.from_vector_store(
 def handle_chat(query):
   try:
     filters =extract_query_details(query)
+    
+    print(json.dumps(filters))
 
     retriever = VectorIndexRetriever(
         index=vector_index,
         similarity_top_k=20,
-        # filters=MetadataFilters(
-        #     filters=[
-        #         MetadataFilter(
-        #             key="company_name",
-        #             operator=FilterOperator.IN,
-        #             value=[company["company_name"] for company in filters["companies"]
-        #                    ]),
-        #     ]
-        # )
+        filters=MetadataFilters(
+            filters=[
+                MetadataFilter(
+                    key="symbol",
+                    operator=FilterOperator.IN,
+                    value=[company["symbol"] for company in filters["companies"]
+                           ]),
+            ]
+        )
     )
     nodes = retriever.retrieve(query)
     
@@ -66,12 +69,30 @@ def handle_chat(query):
         "source":node.node.metadata["url"]
       })
       
-    re_ranked_nodes= re_rank_nodes(filters["companies"][0]["company_name"],query,result_nodes)
+    print("Filtering")
+    filtered_nodes = filter_nodes(filters["companies"][0]["company_name"],query,result_nodes)
     
-    for node in re_ranked_nodes:
+    for index,node in enumerate(filtered_nodes):
       print(node["node_id"])
+      # node["content"] = result_nodes[index]["content"]
       
+    print()
+      
+    print("Re-Ranking")
+    re_ranked_nodes= re_rank_nodes(filters["companies"][0]["company_name"],query,filtered_nodes)
+    
+    for index,node in enumerate(re_ranked_nodes):
+      print(node["node_id"])
+      # node["content"] = result_nodes[index]["content"]
+    
+    print()
+      
+    print("Cleaning")
     cleaned_nodes = clean_contents(query,re_ranked_nodes)
+    
+    for index,node in enumerate(cleaned_nodes):
+      print(node["node_id"])
+      # node["content"] = result_nodes[index]["content"]
     
     print()
     
@@ -89,7 +110,7 @@ def handle_chat(query):
           node["cleaned_content"] = item["cleaned_content"]
           break
         
-      if not "cleaned_content" in node.keys():
+      if not "cleaned_content" in node.keys() or not "source" in node.keys():
         continue
       
       if any(final_node["node_id"] == node["node_id"] for final_node in final_nodes):
@@ -103,15 +124,15 @@ def handle_chat(query):
       
     # final_nodes = {
     #   "original":result_nodes,
+    #   "filtered":filtered_nodes,
     #   "re_ranked":re_ranked_nodes,
     #   "cleaned":cleaned_nodes,
     #   "final":final_nodes
-    # }
-    
+    # }   
       
     return final_nodes,[]
   except Exception as e:
-    print(e)
+    print("error",e)
     return [],[]
       
 
