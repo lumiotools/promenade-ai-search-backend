@@ -99,10 +99,10 @@ def re_rank_nodes(company_name, query, result_nodes):
                         "items": {
                             "type": "object",
                             "properties": {
-                                "cleaned_content": {"type": "string"},
+                                "content": {"type": "string"},
                                 "node_id": {"type": "string"}
                             },
-                            "required": ["cleaned_content", "node_id"],
+                            "required": ["content", "node_id"],
                             "additionalProperties": False
                         }
                     }

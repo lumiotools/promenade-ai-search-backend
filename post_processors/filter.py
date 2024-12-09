@@ -51,6 +51,8 @@ You are an advanced content filtering AI assistant. Your task is to rigorously r
 1. Identify nodes containing administrative, metadata-heavy, or non-substantive content.
 2. Aggressively filter out irrelevant content using the guidelines above.
 3. Retain only nodes with actionable, substantive information.
+4. Do not repeat the nodes in the final output.
+5. The filtered nodes that are returned should be unique based on node_id and should have the correct node_id as provided in the input.
 
 **Core Objective**:
 Produce a clean dataset containing only relevant, meaningful, and actionable content by strictly removing administrative, repetitive, and metadata-heavy nodes.
@@ -96,10 +98,10 @@ def filter_nodes(company_name, query, result_nodes):
                         "items": {
                             "type": "object",
                             "properties": {
-                                "cleaned_content": {"type": "string"},
+                                "content": {"type": "string"},
                                 "node_id": {"type": "string"}
                             },
-                            "required": ["cleaned_content", "node_id"],
+                            "required": ["content", "node_id"],
                             "additionalProperties": False
                         }
                     }
