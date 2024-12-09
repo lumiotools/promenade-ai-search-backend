@@ -33,7 +33,7 @@ You are an advanced content filtering AI assistant. Your task is to rigorously r
      c) Include repetitive acknowledgments or sign-offs (e.g., "Thanks," "Operator signoff").
 
 3. **Preserve Meaningful Content**:
-   - Retain only nodes with:
+   - Retain only nodes which Follows User Query & with:
      a) Substantive insights, such as financial data, strategic discussions, or detailed answers.
      b) Actionable information relevant to the discussion or context.
 
@@ -74,12 +74,13 @@ def filter_nodes(company_name, query, result_nodes):
             {"role": "user",
              "content": f"""
               This is the company name: {company_name}
-              Please provide data only related to this company and ignore all other nodes.
               This is the user query: {query}
+
               These are my nodes:
               {json.dumps(result_nodes)}
-
-              Based on the user query above, filter out my nodes such that only the relevant nodes for the specified company are included, and remove all other irrelevant nodes.
+              
+              Core Objective:
+              Deliver only the nodes that are the most likely to answer the user's query or provide meaningful context about the specified company.
               """.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
              }
         ],
