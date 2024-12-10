@@ -22,5 +22,5 @@ def read_root():
 
 @app.post("/api/chat")
 def chat(body: QueryModel):
-    answer, sources = handle_chat(body.message)
-    return {"response": answer, "sources": sources}
+    answer, valid_sources, invalid_sources = handle_chat(body.message)
+    return {"response": answer, "sources": [], "valid_sources":valid_sources, "invalid_sources": invalid_sources}

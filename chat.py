@@ -100,6 +100,9 @@ def handle_chat(query):
     
     final_nodes = []
     
+    valid_sources = []
+    invalid_sources = []
+    
     for node in re_ranked_nodes:
       for item in result_nodes:
         if item["node_id"] == node["node_id"]:
@@ -124,6 +127,14 @@ def handle_chat(query):
         "source":node["source"]
       })
       
+    for node in final_nodes:
+      if not node["source"] in valid_sources:
+        valid_sources.append(node["source"])
+      
+    for node in result_nodes:
+      if not node["source"] in valid_sources and not node["source"] in invalid_sources:
+        invalid_sources.append(node["source"])
+      
     # final_nodes = {
     #   "original":result_nodes,
     #   "filtered":filtered_nodes,
@@ -132,7 +143,7 @@ def handle_chat(query):
     #   "final":final_nodes
     # }   
       
-    return final_nodes,[]
+    return final_nodes,valid_sources,invalid_sources
   except Exception as e:
     print("error",e)
     return [],[]
