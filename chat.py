@@ -69,6 +69,8 @@ def handle_chat(query):
         "source":node.node.metadata["url"],
         "filed":node.node.metadata["filed"] if "filed" in node.node.metadata.keys() else None,
         "title":node.node.metadata["title"] if "title" in node.node.metadata.keys() else None,
+        "doc_type":"SEC Filing" if "form_type" in node.node.metadata.keys() else 
+        "IR Page" if "section_name" in node.node.metadata.keys() else "Earnings Call"
       })
       
     print("Filtering")
@@ -108,6 +110,7 @@ def handle_chat(query):
         if item["node_id"] == node["node_id"]:
           node["content"] = item["content"]
           node["source"] = item["source"]
+          node["doc_type"] = item["doc_type"]
           break
       
       for item in cleaned_nodes:
@@ -125,16 +128,23 @@ def handle_chat(query):
       final_nodes.append({
         "node_id":node["node_id"],
         "content": node["cleaned_content"],
-        "source":node["source"]+"#:~:text="+item["highlight"]
+        "source":node["source"]+"#:~:text="+item["highlight"],
+        "doc_type":node["doc_type"]
       })
       
     for node in final_nodes:
-      if not node["source"] in valid_sources:
-        valid_sources.append(node["source"])
+      if not node["source"] in [source["url"] for source in valid_sources]:
+        valid_sources.append({
+          "doc_type":node["doc_type"],
+          "url":node["source"]
+        })
       
     for node in result_nodes:
-      if not node["source"] in valid_sources and not node["source"] in invalid_sources:
-        invalid_sources.append(node["source"])
+      if not node["source"] in [source["url"] for source in valid_sources] and not node["source"] in [source["url"] for source in invalid_sources]:
+        invalid_sources.append({
+                                "doc_type":node["doc_type"],
+                                "url":node["source"]
+                               })
       
     # final_nodes = {
     #   "original":result_nodes,
