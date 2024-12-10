@@ -5,6 +5,7 @@ from typing import List
 import pandas as pd
 import json
 from enum import Enum
+from urllib import parse
 
 load_dotenv()
 client = OpenAI()
@@ -105,7 +106,21 @@ def clean_contents(query,re_ranked_nodes):
     )
     
     res = chat_completion.choices[0].message.content
+    
+    highlights = []
+    for node in re_ranked_nodes:
+        texts = node["content"].split(" ")
+        start = texts[:3]
+        end = texts[-3:]
         
+        highlights.append(f"{parse.quote(" ".join(start))},{parse.quote(" ".join(end))}")
+        
+    nodes =  json.loads(res)["nodes"]
+    
+    for i, node in enumerate(nodes):
+        node["highlight"] = highlights[i]
+        
+    print(nodes)
 
-    return json.loads(res)["nodes"]
+    return nodes
     

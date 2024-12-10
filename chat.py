@@ -113,6 +113,7 @@ def handle_chat(query):
       for item in cleaned_nodes:
         if item["node_id"] == node["node_id"]:
           node["cleaned_content"] = item["cleaned_content"]
+          node["highlight"] = item["highlight"]
           break
         
       if not "cleaned_content" in node.keys() or not "source" in node.keys():
@@ -124,7 +125,7 @@ def handle_chat(query):
       final_nodes.append({
         "node_id":node["node_id"],
         "content": node["cleaned_content"],
-        "source":node["source"]
+        "source":node["source"]+"#:~:text="+item["highlight"]
       })
       
     for node in final_nodes:
@@ -146,7 +147,7 @@ def handle_chat(query):
     return final_nodes,valid_sources,invalid_sources
   except Exception as e:
     print("error",e)
-    return [],[]
+    return [],[],[]
       
 
 # Grab 5 search results
