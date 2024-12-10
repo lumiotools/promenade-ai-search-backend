@@ -113,7 +113,7 @@ def clean_contents(query,re_ranked_nodes):
         start = texts[:3]
         end = texts[-3:]
         
-        highlights.append(f"{parse.quote(" ".join(start))},{parse.quote(" ".join(end))}")
+        highlights.append(f"{parse.quote(' '.join(start))},{parse.quote(' '.join(end))}")
         
     nodes =  json.loads(res)["nodes"]
     
