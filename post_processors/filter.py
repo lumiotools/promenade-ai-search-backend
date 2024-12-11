@@ -5,6 +5,7 @@ from typing import List
 import pandas as pd
 import json
 from enum import Enum
+from token_calculation import calculate_token
 
 load_dotenv()
 client = OpenAI()
@@ -73,10 +74,8 @@ class ResponseFormat(BaseModel):
 
 
 def filter_nodes(company_name, query, result_nodes):
-
-    chat_completion = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{
+    
+    messages = [{
             "role": "system", "content": system_prompt.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
         },
             {"role": "user",
@@ -91,7 +90,11 @@ def filter_nodes(company_name, query, result_nodes):
               Deliver only the nodes that are the most likely to answer the user's query or provide meaningful context about the specified company.
               """.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
              }
-        ],
+        ]
+
+    chat_completion = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages,
         response_format={
         "type": "json_schema",
         "json_schema": {
@@ -122,5 +125,9 @@ def filter_nodes(company_name, query, result_nodes):
     )
 
     res = chat_completion.choices[0].message.content
+    
+    messages.append({"role":"assistant", "content":res})
+    
+    token_usage = calculate_token([message["content"] for message in messages])
 
-    return json.loads(res)["nodes"]
+    return json.loads(res)["nodes"], token_usage

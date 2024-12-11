@@ -5,6 +5,7 @@ from typing import List
 import pandas as pd
 import json
 from enum import Enum
+from token_calculation import calculate_token
 
 load_dotenv()
 client = OpenAI(
@@ -63,30 +64,37 @@ class CompanyDetails(BaseModel):
     
 class ResponseFormat(BaseModel):
     companies: List[CompanyDetails]
-    query_type: str  # Changed from QueryType to str
+    # query_type: str  # Changed from QueryType to str
     
     # Query Type only IR, SEC_FILINGS, OTHERS
     
 
 
 def extract_query_details(query):
+    
+    messages = [{
+            "role": "system", "content": system_prompt}, {"role": "user", "content": query}]
+    
     chat_completion = client.beta.chat.completions.parse(
         model="gpt-4o-mini",
-        messages=[{
-            "role": "system", "content": system_prompt}, {"role": "user", "content": query}],
+        messages=messages,
         response_format=ResponseFormat
     )
 
     res = chat_completion.choices[0].message.parsed
     companies = res.companies
-    query_type = res.query_type
+    # query_type = res.query_type
     
     filters = {
         "companies": [company.model_dump() for company in companies],
-        "query_type": query_type
+        # "query_type": query_type
     }
     
-    return filters
+    messages.append({"role":"assistant", "content":chat_completion.choices[0].message.content})
+    
+    token_usage = calculate_token([message["content"] for message in messages])
+    
+    return filters, token_usage
 
 
 # FOR TESTING PURPOSES

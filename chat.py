@@ -36,9 +36,10 @@ vector_index = VectorStoreIndex.from_vector_store(
 
 def handle_chat(query):
   try:
-    filters =extract_query_details(query)
+    filters, filters_extraction_token_usage =extract_query_details(query)
     
     print(json.dumps(filters))
+    print(f"Token Used for Filters Extraction: {filters_extraction_token_usage}")
 
     retriever = VectorIndexRetriever(
         index=vector_index,
@@ -74,7 +75,8 @@ def handle_chat(query):
       })
       
     print("Filtering")
-    filtered_nodes = filter_nodes(filters["companies"][0]["company_name"],query,result_nodes)
+    filtered_nodes, filtering_token_usage = filter_nodes(filters["companies"][0]["company_name"],query,result_nodes)
+    print(f"Token Used for Filtering: {filtering_token_usage}")
     
     for index,node in enumerate(filtered_nodes):
       print(node["node_id"])
@@ -83,7 +85,8 @@ def handle_chat(query):
     print()
       
     print("Re-Ranking")
-    re_ranked_nodes= re_rank_nodes(filters["companies"][0]["company_name"],query,filtered_nodes)
+    re_ranked_nodes, re_ranking_token_usage= re_rank_nodes(filters["companies"][0]["company_name"],query,filtered_nodes)
+    print(f"Token Used for Re-Ranking: {re_ranking_token_usage}")
     
     for index,node in enumerate(re_ranked_nodes):
       print(node["node_id"])
@@ -92,13 +95,16 @@ def handle_chat(query):
     print()
       
     print("Cleaning")
-    cleaned_nodes = clean_contents(query,re_ranked_nodes)
+    cleaned_nodes, cleaning_token_usage = clean_contents(query,re_ranked_nodes)
+    print(f"Token Used for Cleaning: {cleaning_token_usage}")
     
     for index,node in enumerate(cleaned_nodes):
       print(node["node_id"])
       # node["content"] = result_nodes[index]["content"]
     
     print()
+    
+    print(f"Total Token Usage: {filters_extraction_token_usage+filtering_token_usage+re_ranking_token_usage+cleaning_token_usage}")
     
     final_nodes = []
     

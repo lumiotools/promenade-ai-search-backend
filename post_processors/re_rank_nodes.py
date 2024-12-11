@@ -5,6 +5,7 @@ from typing import List
 import pandas as pd
 import json
 from enum import Enum
+from token_calculation import calculate_token
 
 load_dotenv()
 client = OpenAI()
@@ -70,10 +71,8 @@ Guiding Principles:
 
 
 def re_rank_nodes(company_name, query, result_nodes):
-
-    chat_completion = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{
+    
+    messages = [{
             "role": "system", "content": system_prompt.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
         },
             {"role": "user",
@@ -86,7 +85,11 @@ def re_rank_nodes(company_name, query, result_nodes):
               Based on the user query above, Re-rank my nodes such that the most relevant nodes are at the top and the least relevant nodes are at the bottom.
               """.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
              }
-        ],
+        ]
+
+    chat_completion = client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages,
         response_format={
         "type": "json_schema",
         "json_schema": {
@@ -117,5 +120,9 @@ def re_rank_nodes(company_name, query, result_nodes):
     )
 
     res = chat_completion.choices[0].message.content
+    
+    messages.append({"role":"assistant", "content":res})
+    
+    token_usage = calculate_token([message["content"] for message in messages])
 
-    return json.loads(res)["nodes"]
+    return json.loads(res)["nodes"], token_usage
