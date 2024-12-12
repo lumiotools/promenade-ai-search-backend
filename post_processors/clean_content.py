@@ -26,7 +26,7 @@ Your goal is to ensure that the content of each node contains only relevant info
    - Retain only the exact sentences or phrases that are relevant to the query, maintaining the original order of those sentences.  
 
 2. **Eliminate Non-Essential Content**:  
-   - Remove unrelated sentences, headers, footers, and metadata (e.g., "Company:", "Section:", "Title:", or "URL:").  
+   - Remove unrelated sentences, headers, footers, and metadata (e.g., "Company:", "Section:", "Title:", "URL:", "Filed On:", "SEC Filing Form Type:", "Period:", or "URL:").  
    - Exclude participant lists, operator instructions, and disclaimers, such as:  
      ```
      _This article is a transcript of this conference call produced for The Motley Fool..._
@@ -49,10 +49,28 @@ Your goal is to ensure that the content of each node contains only relevant info
    - Process each node individually, maintaining its original position in the list.  
    - Ensure that the `node_id` remains unchanged and that nodes are not removed or reordered.  
 
+7. **Special Handling only for SEC Filings**:  
+   - If a node contains information about SEC filings, ensure the content follows all the above rules and additionally:  
+     a) Extract and display the following details in proper markdown format, if available:  
+        - **Form Type**: Mention the SEC form type (e.g., 10-K, 8-K, etc.).  
+        - **Filing Date**: Include the date the filing was made.  
+        - **Important Data**: Extract and include relevant sections, such as financial highlights, summaries, or other key details.  
+     b) Format the SEC filing content as follows:  
+        ```
+        ### SEC Filing Details:
+        - **Form Type**: [Form Type Here]  
+        - **Filing Date**: [Filing Date Here]  
+        - **Key Information**:  
+          [Important data or summary of the filing, presented as bullet points or clean paragraphs.]  
+        ```
+
 ---
 
 **Core Objective**:  
-For each node, return the cleaned `content` that directly addresses the query in the exact original tone, structure, and sentence order. The cleaned content must meet the **minimum word requirement of 100 words** without summarizing or interpreting the text. It should read as though it is directly extracted from the source.
+For each node, return the cleaned `content` that directly addresses the query in the exact original tone, structure, and sentence order. The cleaned content must meet the **minimum word requirement of 100 words** without summarizing or interpreting the text. For SEC filings, ensure proper markdown formatting and include only substantive information. The output must be clear, concise, and safe for all audiences.
+
+**Note**:  
+Remove any words that can trigger content filtering or are not safe for work. Ensure that the content is safe for all audiences.
 """
 
 
@@ -71,7 +89,7 @@ def clean_contents(query,re_ranked_nodes):
               Preserve the order of the nodes and return in same order.
               
               These are my nodes:
-              {json.dumps(re_ranked_nodes)}
+              {json.dumps(re_ranked_nodes).replace("UNITED STATES SECURITIES AND EXCHANGE COMMISSION","").replace("Washington, D.C.","")}
               """.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
             }
                 

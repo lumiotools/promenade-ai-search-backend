@@ -37,7 +37,7 @@ Your job is to filter nodes based on their `content` while ensuring each node is
      c) Include repetitive acknowledgments or sign-offs (e.g., "Thanks," "Operator signoff").  
 
 3. **Preserve Meaningful Content**:  
-   - Retain only nodes which follows users query and are with:  
+   - Retain only nodes which follow the user's query and are with:  
      a) Substantive insights, such as financial data, strategic discussions, or detailed answers.  
      b) Actionable information relevant to the discussion or user query.  
 
@@ -47,12 +47,19 @@ Your job is to filter nodes based on their `content` while ensuring each node is
      b) Duration markers, timestamps, or session management details.  
      c) Disclaimers or boilerplate text (e.g., "This article is a transcript of this conference call...").  
 
+5. **Handle SEC Filings**:  
+   - Preserve all nodes containing SEC filings if they include detailed, substantive information relevant to the query.  
+   - Filter out SEC filings that contain only a title or no actionable content.  
+
 **Processing Steps**:  
 1. Treat each node as an independent unit for evaluation.  
 2. Identify nodes containing administrative, metadata-heavy, or non-substantive content.  
 3. Aggressively filter out irrelevant content using the guidelines above.  
 4. Retain only nodes with actionable, substantive information.  
-5. Ensure the output contains unique nodes based on their `node_id` and maintain correct node mappings.  
+5. For SEC filings, check if the content is substantive:
+   - If it contains details relevant to the query, retain it.  
+   - If it only contains a title or no meaningful content, filter it out.  
+6. Ensure the output contains unique nodes based on their `node_id` and maintain correct node mappings.  
 
 **Examples of Content to Remove**:  
 - Nodes like:  
@@ -61,7 +68,7 @@ Your job is to filter nodes based on their `content` while ensuring each node is
   ```  
 
 **Core Objective**:  
-Produce a clean dataset containing only relevant, meaningful, and actionable content by strictly removing administrative, repetitive, and metadata-heavy nodes. Ensure the output is consistent, concise, and maintains correct node identifiers.
+Produce a clean dataset containing only relevant, meaningful, and actionable content by strictly removing administrative, repetitive, and metadata-heavy nodes. Ensure the output is consistent, concise, and maintains correct node identifiers. Retain SEC filings only if they include substantive information; filter out filings that are merely titles or lack meaningful content.
 """
 
 class Content(BaseModel):
