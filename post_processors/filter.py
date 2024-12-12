@@ -92,7 +92,7 @@ def filter_nodes(company_name, query, result_nodes):
               This is the user query: {query}
 
               These are my nodes:
-              {json.dumps(result_nodes)}
+              {json.dumps(result_nodes).replace("UNITED STATES SECURITIES AND EXCHANGE COMMISSION","").replace("Washington, D.C.","")}
               
               Core Objective:
               Deliver only the nodes that are the most likely to answer the user's query or provide meaningful context about the specified company.

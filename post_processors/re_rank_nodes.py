@@ -81,7 +81,7 @@ def re_rank_nodes(company_name, query, result_nodes):
               This is the company name: {company_name}
               This is the user query: {query}
               These are my nodes:
-              {json.dumps(result_nodes)}
+              {json.dumps(result_nodes).replace("UNITED STATES SECURITIES AND EXCHANGE COMMISSION","").replace("Washington, D.C.","")}
 
               Based on the user query above, Re-rank my nodes such that the most relevant nodes are at the top and the least relevant nodes are at the bottom.
               """.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
