@@ -54,13 +54,14 @@ Your goal is to ensure that the content of each node contains only relevant info
      a) Extract and display the following details in proper markdown format, if available:  
         - **Form Type**: Mention the SEC form type (e.g., 10-K, 8-K, etc.).  
         - **Filing Date**: Include the date the filing was made.  
-        - Dsiplay relevant sections, such as financial highlights, summaries, or other key details.  
+        - **Important Data**: Extract and include relevant sections, such as financial highlights, summaries, or other key details.  
      b) Format the SEC filing content as follows:  
         ```
         ### SEC Filing Details:
         - **Form Type**: [Form Type Here]  
         - **Filing Date**: [Filing Date Here]  
-        - Dsiplay relevant sections, such as financial highlights, summaries, or other key details.  
+        - **Key Information**:  
+          [Important data or summary of the filing, presented as bullet points or clean paragraphs.]  
         ```
 
 ---
