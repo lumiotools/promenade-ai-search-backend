@@ -66,8 +66,16 @@ Your goal is to ensure that the content of each node contains only relevant info
 
 ---
 
+**For Start and End words (not to be part of cleaned_content, its part of startWords and endWords)**:
+    1) For the startWords string give the string containing the initial words of our snippet from original content.
+    2) For the endWords string give the string containing the ending words of our snippet from original content.
+    3) The words should be as in the original content and maximum 3 words are allowed.
+    4) The startWords and endWords should be from the original content from where we have captured the snippet.
+    5) The startWords and endWords should start and end on plain text only. (as it will be used to highlight content on original source page)
+
 **Core Objective**:  
-For each node, return the cleaned `content` that directly addresses the query in the exact original tone, structure, and sentence order. The cleaned content must meet the **minimum word requirement of 100 words** without summarizing or interpreting the text. For SEC filings, ensure proper markdown formatting and include only substantive information. The output must be clear, concise, and safe for all audiences.
+For each node, return the cleaned `content` that directly addresses the query in the exact original tone, structure, and sentence order. The cleaned content must meet the **minimum word requirement of 100 words** without summarizing or interpreting the text. 
+Try to keep the cleaned content short and focused on the user query. For SEC filings, ensure proper markdown formatting and include only substantive information. The output must be clear, concise, and safe for all audiences.
 
 **Note**:  
 Remove any words that can trigger content filtering or are not safe for work. Ensure that the content is safe for all audiences.
@@ -107,9 +115,11 @@ def clean_contents(query,re_ranked_nodes):
                             "type": "object",
                             "properties": {
                                 "cleaned_content": {"type": "string"},
-                                "node_id": {"type": "string"}
+                                "node_id": {"type": "string"},
+                                "startWords": {"type":"string"},
+                                "endWords": {"type":"string"}
                             },
-                            "required": ["cleaned_content", "node_id"],
+                            "required": ["cleaned_content", "node_id","startWords","endWords"],
                             "additionalProperties": False
                         }
                     }
@@ -124,21 +134,14 @@ def clean_contents(query,re_ranked_nodes):
     )
     
     res = chat_completion.choices[0].message.content
-    
-    highlights = []
-    for node in re_ranked_nodes:
-        texts = node["content"].split(" ")
-        start = texts[:3]
-        end = texts[-3:]
-        
-        highlights.append(f"{parse.quote(' '.join(start))},{parse.quote(' '.join(end))}")
         
     nodes =  json.loads(res)["nodes"]
     
-    for i, node in enumerate(nodes):
-        node["highlight"] = highlights[i]
-        
-    print(nodes)
+    for node in nodes:
+        start = node["startWords"]
+        end = node["endWords"]
+        highlight = f"{parse.quote(start)},{parse.quote(end)}"
+        node["highlight"] = highlight
 
     return nodes
     
