@@ -79,6 +79,8 @@ def handle_chat(query):
     
     for node in live_search_nodes:
       print(node["node_id"])
+      
+    print()
     
     for index, node in enumerate(live_search_nodes):      
         

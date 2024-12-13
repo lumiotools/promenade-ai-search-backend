@@ -62,9 +62,9 @@ Your job is to filter nodes based on their `content` while ensuring each node is
    - If it only contains a title or no meaningful content, filter it out.  
 6. Ensure the output contains unique nodes based on their `node_id` and maintain correct node mappings.  
 
-**Special handling for node with doc_type = 'Industry Report'**:
-    - Only remove the node if it does not contain any useful content.
-    - If the node contains any useful content, retain it.
+**Special handling for nodes with doc_type = 'Industry Report'**:
+    - Only remove the node if it does not contain any useful content or is a kind of empty page. (like page not found, or no content found)
+    - If the node contains any answerable content, then surely keep it.
     - No strict filtering is required for doc_type = 'Industry Report' node type.
 
 **Examples of Content to Remove**:  
