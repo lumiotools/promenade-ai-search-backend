@@ -79,7 +79,12 @@ def handle_chat(query):
     
     for index,node in enumerate(filtered_nodes):
       print(node["node_id"])
-      # node["content"] = result_nodes[index]["content"]
+      for result_node in result_nodes:
+        if node["node_id"] == result_node["node_id"]:
+          node["content"] = result_node["content"]
+          node["filed"] = result_node["filed"]
+          node["title"] = result_node["title"]
+          node["doc_type"] = result_node["doc_type"]
       
     print()
     
@@ -104,7 +109,8 @@ def handle_chat(query):
       
       filtered_nodes.append({
         "content": node["content"],
-        "node_id":node["node_id"]
+        "node_id":node["node_id"],
+        "doc_type":"Industry Report"
       })
       
     print("Re-Ranking")
@@ -112,7 +118,12 @@ def handle_chat(query):
     
     for index,node in enumerate(re_ranked_nodes):
       print(node["node_id"])
-      # node["content"] = result_nodes[index]["content"]
+      for result_node in result_nodes:
+        if node["node_id"] == result_node["node_id"]:
+          node["content"] = result_node["content"]
+          node["filed"] = result_node["filed"]
+          node["title"] = result_node["title"]
+          node["doc_type"] = result_node["doc_type"]
     
     print()
       

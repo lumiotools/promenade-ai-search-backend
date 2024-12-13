@@ -34,7 +34,8 @@ Your goal is to ensure that the content of each node contains only relevant info
 
 3. **Preserve Original Wording and Sentence Order**:  
    - Ensure that the output matches the original text exactly, using the same sentence structure, phrasing, and order as in the source content.  
-   - Do not paraphrase, summarize, or interpret the text.  
+   - Do not paraphrase, summarize, or interpret the text in any way.  
+   - Maintain the original tone of the content.
 
 4. **Minimum Word Requirement**:  
    - Ensure the cleaned content for each node is **at least 100 words**.  
@@ -49,33 +50,17 @@ Your goal is to ensure that the content of each node contains only relevant info
    - Process each node individually, maintaining its original position in the list.  
    - Ensure that the `node_id` remains unchanged and that nodes are not removed or reordered.  
 
-7. **Special Handling only for nodes whose content contains `form_type:`**:  
-   - If a node contains information about SEC filings, ensure the content follows all the above rules and additionally:  
-     a) Extract and display the following details in proper markdown format, if available:  
-        - **Form Type**: Mention the SEC form type (e.g., 10-K, 8-K, etc.).  
-        - **Filing Date**: Include the date the filing was made.  
-        - **Important Data**: Extract and include relevant sections, such as financial highlights, summaries, or other key details.  
-     b) Format the SEC filing content as follows:  
+7. **Special Handling only in case the node is having key doc_type with value as `SEC Filing`**:  
+   - If node contains key doc_type with value as `SEC Filing`, ensure the content follows all the above rules and additionally:  
+     a) Cutout the titles and focus on main content.
+     b) Ensure the Formatted content is readable and well structured.
+     c) The words are as in the original form buy we can change the markdown to increase its redability.
         ```
-        ### SEC Filing Details:
-        - **Form Type**: [Form Type Here]  
-        - **Filing Date**: [Filing Date Here]  
-        - **Key Information**:  
-          [Important data or summary of the filing, presented as bullet points or clean paragraphs.]  
-        ```
-
 ---
 
-**For Start and End words (not to be part of cleaned_content, its part of startWords and endWords)**:
-    1) For the startWords string give the string containing the initial words of our snippet from original content.
-    2) For the endWords string give the string containing the ending words of our snippet from original content.
-    3) The words should be as in the original content and maximum 3 words are allowed.
-    4) The startWords and endWords should be from the original content from where we have captured the snippet.
-    5) The startWords and endWords should start and end on plain text only. (as it will be used to highlight content on original source page)
-
 **Core Objective**:  
-For each node, return the cleaned `content` that directly addresses the query in the exact original tone, structure, and sentence order. The cleaned content must meet the **minimum word requirement of 100 words** without summarizing or interpreting the text. 
-Try to keep the cleaned content short and focused on the user query. For SEC filings, ensure proper markdown formatting and include only substantive information. The output must be clear, concise, and safe for all audiences.
+For each node, treat them individual based on thier unique node_id's and return the cleaned `content` that directly addresses the query in the exact original tone, structure, and sentence order. The cleaned content must meet the **minimum word requirement of 100 words** without summarizing or interpreting the text in any way. 
+Try to keep the cleaned content short and focused on the user query. The output must be clear, concise, and safe for all audiences.
 
 **Note**:  
 Remove any words that can trigger content filtering or are not safe for work. Ensure that the content is safe for all audiences.
@@ -86,7 +71,8 @@ def clean_contents(query,re_ranked_nodes):
     
     chat_completion = client.chat.completions.create(
         model="gpt-4o-mini",
-        messages=[{
+        messages=[
+            {
             "role": "system", "content": system_prompt.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
             },
              {"role": "user", 
@@ -116,10 +102,16 @@ def clean_contents(query,re_ranked_nodes):
                             "properties": {
                                 "cleaned_content": {"type": "string"},
                                 "node_id": {"type": "string"},
-                                "startWords": {"type":"string"},
-                                "endWords": {"type":"string"}
+                                "start_words": {
+                                    "type":"string",
+                                    "description":"The string containing the initial 3 words of our snippet from original node content."
+                                    },
+                                "end_words": {
+                                    "type":"string",
+                                    "description":"The string containing the ending 3 words of our snippet from original node content."
+                                    }
                             },
-                            "required": ["cleaned_content", "node_id","startWords","endWords"],
+                            "required": ["cleaned_content", "node_id","start_words","end_words"],
                             "additionalProperties": False
                         }
                     }
@@ -138,8 +130,8 @@ def clean_contents(query,re_ranked_nodes):
     nodes =  json.loads(res)["nodes"]
     
     for node in nodes:
-        start = node["startWords"]
-        end = node["endWords"]
+        start = node["start_words"]
+        end = node["end_words"]
         highlight = f"{parse.quote(start)},{parse.quote(end)}"
         node["highlight"] = highlight
 

@@ -23,6 +23,10 @@ def get_pages_content(urls):
         html_content = soup.find('body')
         markdown_content = md(str(html_content))
         
+        if markdown_content == "":
+            print(f"Failed to convert {url[:30]}... to markdown\n")
+            continue
+        
         print(f"Converted {url[:30]}... to markdown\n")
         
         contents.append({
