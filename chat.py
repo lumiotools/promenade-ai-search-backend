@@ -74,6 +74,15 @@ def handle_chat(query):
         "IR Page" if "section_name" in node.node.metadata.keys() else "Earnings Call"
       })
       
+    print("Filtering")
+    filtered_nodes = filter_nodes(filters["companies"][0]["company_name"],query,result_nodes)
+    
+    for index,node in enumerate(filtered_nodes):
+      print(node["node_id"])
+      # node["content"] = result_nodes[index]["content"]
+      
+    print()
+    
     print("Performing Live Search...")
     live_search_nodes = handle_live_search(query)
     
@@ -93,14 +102,10 @@ def handle_chat(query):
         "doc_type":"Industry Report"
       })
       
-    print("Filtering")
-    filtered_nodes = filter_nodes(filters["companies"][0]["company_name"],query,result_nodes)
-    
-    for index,node in enumerate(filtered_nodes):
-      print(node["node_id"])
-      # node["content"] = result_nodes[index]["content"]
-      
-    print()
+      filtered_nodes.append({
+        "content": node["content"],
+        "node_id":node["node_id"]
+      })
       
     print("Re-Ranking")
     re_ranked_nodes= re_rank_nodes(filters["companies"][0]["company_name"],query,filtered_nodes)
@@ -143,6 +148,9 @@ def handle_chat(query):
         continue
       
       if any(final_node["node_id"] == node["node_id"] for final_node in final_nodes):
+        continue
+      
+      if len(node["cleaned_content"]) < 25:
         continue
       
       final_nodes.append({
