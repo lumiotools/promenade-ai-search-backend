@@ -8,8 +8,12 @@ def get_pages_content(urls):
         
     for url in urls:
         print(f"Fetching {url[:30]}...")
-        response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
-        if response.status_code != 200:
+        try:
+            response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}, timeout=15)
+            if response.status_code != 200:
+                print(f"Failed to fetch {url[:30]}...\n")
+                continue
+        except Exception as e:
             print(f"Failed to fetch {url[:30]}...\n")
             continue
         
