@@ -128,7 +128,7 @@ def handle_chat(query):
     print()
       
     print("Cleaning")
-    cleaned_nodes = clean_contents(query,re_ranked_nodes)
+    cleaned_nodes = [clean_contents(query,[node])[0] for node in re_ranked_nodes]
     
     for index,node in enumerate(cleaned_nodes):
       print(node["node_id"])
