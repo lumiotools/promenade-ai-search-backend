@@ -74,6 +74,23 @@ def handle_chat(query):
         "IR Page" if "section_name" in node.node.metadata.keys() else "Earnings Call"
       })
       
+    print("Performing Live Search...")
+    live_search_nodes = handle_live_search(query)
+    
+    for node in live_search_nodes:
+      print(node["node_id"])
+    
+    for index, node in enumerate(live_search_nodes):      
+        
+      result_nodes.append({
+        "content": node["content"],
+        "node_id":node["node_id"],
+        "source":node["source"],
+        "filed": None,
+        "title": None,
+        "doc_type":"Industry Report"
+      })
+      
     print("Filtering")
     filtered_nodes = filter_nodes(filters["companies"][0]["company_name"],query,result_nodes)
     
@@ -154,30 +171,6 @@ def handle_chat(query):
     #   "cleaned":cleaned_nodes,
     #   "final":final_nodes
     # }   
-    
-    print("Performing Live Search...")
-    live_search_nodes, live_search_valid_sources, live_search_invalid_sources = handle_live_search(query)
-    
-    for i,node in enumerate(live_search_nodes):
-      final_nodes.append({
-        "node_id":f"{i}",
-        "content": node["content"],
-        "source":node["source"],
-        "doc_type":"Industry Report"
-      })
-      
-    for node in live_search_valid_sources:
-      valid_sources.append({
-          "doc_type":node["doc_type"],
-          "url":node["url"]
-        })
-    
-    
-    for node in live_search_invalid_sources:
-      invalid_sources.append({
-          "doc_type":node["doc_type"],
-          "url":node["url"]
-        })
       
     return final_nodes,valid_sources,invalid_sources
   except Exception as e:
