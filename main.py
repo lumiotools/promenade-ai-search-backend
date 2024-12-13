@@ -32,4 +32,5 @@ def chat(body: QueryModel):
     #     live_search_valid_sources, chat_invalid_sources+live_search_valid_sources
     
     answer, valid_sources, invalid_sources = handle_chat(body.message)
+    # answer, valid_sources, invalid_sources = handle_live_search(body.message)
     return {"response": answer, "sources": [], "valid_sources": valid_sources, "invalid_sources": invalid_sources}
