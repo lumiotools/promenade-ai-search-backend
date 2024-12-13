@@ -152,7 +152,6 @@ def handle_chat(query):
         "doc_type":node["doc_type"]
       })
       
-    for node in final_nodes:
       if not node["source"] in [source["url"] for source in valid_sources]:
         valid_sources.append({
           "doc_type":node["doc_type"],
