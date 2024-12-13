@@ -133,12 +133,15 @@ def filter_nodes(company_name, query, result_nodes):
 
     res = chat_completion.choices[0].message.content
     
-    nodes = json.loads(res)["nodes"]
+    nodes = []
     
-    for node in nodes:
+    for node in json.loads(res)["nodes"]:
         for result_node in result_nodes:
             if node["node_id"] == result_node["node_id"]:
-                node["content"] = result_node["content"]
+                nodes.append({
+                    "content": result_node["content"],
+                    "node_id": node["node_id"]
+                })
                 break
 
     return nodes
