@@ -49,7 +49,8 @@ Your job is to filter nodes based on their `content` while ensuring each node is
 
 5. **Handle SEC Filings**:  
    - Preserve all nodes containing SEC filings if they include detailed, substantive information relevant to the query.  
-   - Filter out SEC filings that contain only a title or no actionable content.  
+   - Only Remove the SEC filings nodes that contain only a title or no answerable content.  
+   - Even if there are duplicate form types, retain the node if it contains unique, answerable information.
 
 **Processing Steps**:  
 1. Treat each node as an independent unit for evaluation.  
@@ -111,10 +112,12 @@ def filter_nodes(company_name, query, result_nodes):
                         "items": {
                             "type": "object",
                             "properties": {
-                                "content": {"type": "string"},
+                                # "content": {"type": "string"},
                                 "node_id": {"type": "string"}
                             },
-                            "required": ["content", "node_id"],
+                            "required": [
+                                # "content", 
+                                "node_id"],
                             "additionalProperties": False
                         }
                     }
@@ -129,5 +132,13 @@ def filter_nodes(company_name, query, result_nodes):
     )
 
     res = chat_completion.choices[0].message.content
+    
+    nodes = json.loads(res)["nodes"]
+    
+    for node in nodes:
+        for result_node in result_nodes:
+            if node["node_id"] == result_node["node_id"]:
+                node["content"] = result_node["content"]
+                break
 
-    return json.loads(res)["nodes"]
+    return nodes

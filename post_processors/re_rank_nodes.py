@@ -66,6 +66,9 @@ Guiding Principles:
 - Prioritize depth over breadth
 - Focus on direct, actionable information
 - Provide a nuanced, multi-dimensional ranking approach
+
+**Note**:  
+Remove any words that can trigger content filtering or are not safe for work. Ensure that the content is safe for all audiences.
 """
 
 
@@ -99,10 +102,12 @@ def re_rank_nodes(company_name, query, result_nodes):
                         "items": {
                             "type": "object",
                             "properties": {
-                                "content": {"type": "string"},
+                                # "content": {"type": "string"},
                                 "node_id": {"type": "string"}
                             },
-                            "required": ["content", "node_id"],
+                            "required": [
+                                # "content",
+                                "node_id"],
                             "additionalProperties": False
                         }
                     }
@@ -117,5 +122,13 @@ def re_rank_nodes(company_name, query, result_nodes):
     )
 
     res = chat_completion.choices[0].message.content
+    
+    nodes = json.loads(res)["nodes"]
+    
+    for node in nodes:
+        for result_node in result_nodes:
+            if node["node_id"] == result_node["node_id"]:
+                node["content"] = result_node["content"]
+                break
 
-    return json.loads(res)["nodes"]
+    return nodes

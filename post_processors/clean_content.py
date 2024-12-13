@@ -49,7 +49,7 @@ Your goal is to ensure that the content of each node contains only relevant info
    - Process each node individually, maintaining its original position in the list.  
    - Ensure that the `node_id` remains unchanged and that nodes are not removed or reordered.  
 
-7. **Special Handling only for SEC Filings**:  
+7. **Special Handling only for nodes whose content contains `form_type:` or`filed_on:` or `period:`**:  
    - If a node contains information about SEC filings, ensure the content follows all the above rules and additionally:  
      a) Extract and display the following details in proper markdown format, if available:  
         - **Form Type**: Mention the SEC form type (e.g., 10-K, 8-K, etc.).  
