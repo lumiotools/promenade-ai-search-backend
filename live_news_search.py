@@ -4,7 +4,7 @@ from post_processors.clean_content import clean_contents
 from uuid import uuid4
 
 
-def handle_live_search(query):
+def handle_live_news_search(query):
     try:
         news_articles = get_news_articles(query)
 

@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from chat import handle_chat
-from live_search import handle_live_search
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
