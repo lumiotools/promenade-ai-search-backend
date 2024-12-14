@@ -50,11 +50,12 @@ Your goal is to ensure that the content of each node contains only relevant info
    - Process each node individually, maintaining its original position in the list.  
    - Ensure that the `node_id` remains unchanged and that nodes are not removed or reordered.  
 
-7. **Special Handling only in case the node is having key doc_type with value as `SEC Filing`**:  
-   - If node contains key doc_type with value as `SEC Filing`, ensure the content follows all the above rules and additionally:  
-     a) Cutout the titles and focus on main content.
-     b) Ensure the Formatted content is readable and well structured.
-     c) The words are as in the original form buy we can change the markdown to increase its redability.
+7. **Handling only in case the node is having doc_type with value as `SEC Filing`**:  
+   - If node contains doc_type with value as `SEC Filing`, ensure the content follows all the above rules and additionally:  
+     a) Cutout the titles and focus on main body of content.
+     b) Use the nodes metadata like form_type, filed, period etc. (if metadata available) to add titles to the top of the cleaned content.
+     c) Ensure the Formatted content is readable and well structured.
+     d) The words are as in the original form but we can update the markdown to improve its redability.
         ```
 ---
 
@@ -104,11 +105,11 @@ def clean_contents(query,re_ranked_nodes):
                                 "node_id": {"type": "string"},
                                 "start_words": {
                                     "type":"string",
-                                    "description":"The string containing the initial 3 words of our snippet from original node content."
+                                    "description":"The string containing the original contents snippet's paragraph's initial 3 words only. (Not starting with any special characters)"
                                     },
                                 "end_words": {
                                     "type":"string",
-                                    "description":"The string containing the ending 3 words of our snippet from original node content."
+                                    "description":"The string containing the original contents snippet's paragraph's ending 3 words only. (Not ending with any special characters)"
                                     }
                             },
                             "required": ["cleaned_content", "node_id","start_words","end_words"],
@@ -126,6 +127,7 @@ def clean_contents(query,re_ranked_nodes):
     )
     
     res = chat_completion.choices[0].message.content
+    # print(res)
         
     nodes =  json.loads(res)["nodes"]
     

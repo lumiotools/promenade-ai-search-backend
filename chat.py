@@ -43,7 +43,7 @@ def handle_chat(query):
 
     retriever = VectorIndexRetriever(
         index=vector_index,
-        similarity_top_k=20,
+        similarity_top_k=30,
         filters=MetadataFilters(
             filters=[
                 MetadataFilter(
@@ -56,13 +56,8 @@ def handle_chat(query):
     )
     nodes = retriever.retrieve(query)
     
-    for node in nodes:
-      print(node.node.node_id)
-      
-    print()
-    
     result_nodes = []
-    for index, node in enumerate(nodes):      
+    for node in nodes:      
         
       result_nodes.append({
         "content": node.get_content(),
@@ -74,10 +69,18 @@ def handle_chat(query):
         "IR Page" if "section_name" in node.node.metadata.keys() else "Earnings Call"
       })
       
+    if filters["query_contains_sec_filings"]:
+      result_nodes = [node for node in result_nodes if node["doc_type"] == "SEC Filing"]
+      
+    for node in result_nodes:
+      print(node["node_id"])
+      
+    print()
+      
     print("Filtering")
     filtered_nodes = filter_nodes(filters["companies"][0]["company_name"],query,result_nodes)
     
-    for index,node in enumerate(filtered_nodes):
+    for node in filtered_nodes:
       print(node["node_id"])
       for result_node in result_nodes:
         if node["node_id"] == result_node["node_id"]:
@@ -95,9 +98,7 @@ def handle_chat(query):
       print(node["node_id"])
       
     print()
-    
-    for index, node in enumerate(live_search_nodes):      
-        
+    for node in live_search_nodes:      
       result_nodes.append({
         "content": node["content"],
         "node_id":node["node_id"],
@@ -106,17 +107,18 @@ def handle_chat(query):
         "title": None,
         "doc_type":"Industry Report"
       })
-      
       filtered_nodes.append({
         "content": node["content"],
         "node_id":node["node_id"],
+        "filed": None,
+        "title": None,
         "doc_type":"Industry Report"
       })
       
     print("Re-Ranking")
     re_ranked_nodes= re_rank_nodes(filters["companies"][0]["company_name"],query,filtered_nodes)
     
-    for index,node in enumerate(re_ranked_nodes):
+    for node in re_ranked_nodes:
       print(node["node_id"])
       for result_node in result_nodes:
         if node["node_id"] == result_node["node_id"]:
@@ -126,13 +128,17 @@ def handle_chat(query):
           node["doc_type"] = result_node["doc_type"]
     
     print()
+    
+    cleaned_nodes = []
       
     print("Cleaning")
-    cleaned_nodes = [clean_contents(query,[node])[0] for node in re_ranked_nodes]
-    
-    for index,node in enumerate(cleaned_nodes):
-      print(node["node_id"])
-      # node["content"] = result_nodes[index]["content"]
+    for node in re_ranked_nodes:
+      try:
+        cleaned_node = clean_contents(query,[node])[0]
+        cleaned_nodes.append(cleaned_node)
+        print(cleaned_node["node_id"])
+      except Exception as e:
+        continue
     
     print()
     

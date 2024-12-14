@@ -22,7 +22,7 @@ Your job is to filter nodes based on their `content` while ensuring each node is
 
 **Filtering Guidelines**:  
 
-1. **Handle nodes with key doc_type having value as `Industry Report`**:
+1. **Handle nodes with doc_type as `Industry Report`**:
     - Only remove the node if it does not contain any useful content or is a kind of empty page. (like page not found, or no content found)
     - If the node contains any answerable content, then surely keep it.
     - No strict filtering is required for doc_type = 'Industry Report' node type.
@@ -52,9 +52,9 @@ Your job is to filter nodes based on their `content` while ensuring each node is
      b) Duration markers, timestamps, or session management details.  
      c) Disclaimers or boilerplate text (e.g., "This article is a transcript of this conference call...").  
 
-6. **Handle SEC Filings**:  
-   - Preserve all nodes containing SEC filings if they include detailed, substantive information relevant to the query.  
-   - Only Remove the SEC filings nodes that contain only a title or no answerable content.  
+6. **Handle nodes with doc_type as `SEC Filing`**:  
+   - Preserve all nodes containing doc_type value as `SEC Filing`, no nodes containing doc_type as `SEC Filing` should be eliminated.  
+   - Only Remove the nodes with doc_type as `SEC Filing` that contain only a title or no answerable content.  
    - Even if there are duplicate form types, retain the node if it contains unique, answerable information.
 
 **Processing Steps**:  
@@ -62,7 +62,7 @@ Your job is to filter nodes based on their `content` while ensuring each node is
 2. Identify nodes containing administrative, metadata-heavy, or non-substantive content.  
 3. Aggressively filter out irrelevant content using the guidelines above.  
 4. Retain only nodes with actionable, substantive information.  
-5. For SEC filings, check if the content is substantive:
+5. For doc_type as `SEC Filing`, check if the content is substantive:
    - If it contains details relevant to the query, retain it.  
    - If it only contains a title or no meaningful content, filter it out.  
 6. Ensure the output contains unique nodes based on their `node_id` and maintain correct node mappings.  

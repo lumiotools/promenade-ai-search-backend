@@ -64,6 +64,7 @@ class CompanyDetails(BaseModel):
 class ResponseFormat(BaseModel):
     companies: List[CompanyDetails]
     query_type: str  # Changed from QueryType to str
+    query_contains_sec_filings: bool
     
     # Query Type only IR, SEC_FILINGS, OTHERS
     
@@ -83,7 +84,8 @@ def extract_query_details(query):
     
     filters = {
         "companies": [company.model_dump() for company in companies],
-        "query_type": query_type
+        "query_type": query_type,
+        "query_contains_sec_filings": res.query_contains_sec_filings
     }
     
     return filters
