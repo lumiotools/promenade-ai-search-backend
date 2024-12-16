@@ -1,5 +1,5 @@
-from search.perplexity import get_news_articles
-from search.scrape import get_pages_content
+from live_search.perplexity import get_news_articles
+from live_search.scrape import get_pages_content
 from post_processors.clean_content import clean_contents
 from uuid import uuid4
 

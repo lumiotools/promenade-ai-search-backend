@@ -1,5 +1,5 @@
-from search.sec import get_sec_links
-from search.scrape import get_pages_content
+from live_search.sec import get_sec_links
+from live_search.scrape import get_pages_content
 from post_processors.clean_content import clean_contents
 from uuid import uuid4
 
