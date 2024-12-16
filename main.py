@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List
 from search import handle_search
@@ -40,10 +40,16 @@ def read_root():
 
 @app.post("/api/search")
 def search(body: QueryModel):
-    answer, valid_sources, invalid_sources = handle_search(body.message)
-    return {"response": answer, "sources": [], "valid_sources": valid_sources, "invalid_sources": invalid_sources}
+    try:
+        answer, valid_sources, invalid_sources = handle_search(body.message)
+        return {"response": answer, "sources": [], "valid_sources": valid_sources, "invalid_sources": invalid_sources}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/chat")
 def chat(body: ChatModel):
-    answer = handle_chat(body.node,body.search_query, body.chat_history, body.message)
-    return {"response": answer}
+    try:
+        answer = handle_chat(body.node,body.search_query, body.chat_history, body.message)
+        return {"response": answer}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
