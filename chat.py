@@ -46,4 +46,4 @@ def handle_chat(node, search_query, chat_history, message):
         return response.choices[0].message.content
     except Exception as e:
         print(e)
-        return None
+        return "An error occured while processing the request."
