@@ -18,6 +18,7 @@ from extract_query_details import extract_query_details
 from post_processors.filter import filter_nodes
 from post_processors.re_rank_nodes import re_rank_nodes
 from post_processors.clean_content import clean_contents
+from post_processors.crop_content import crop_content
 from live_news_search import handle_live_news_search
 from live_sec_search import handle_live_sec_search
 import json
@@ -141,25 +142,27 @@ def handle_search(query):
         "title": None,
         "doc_type":"SEC Filing"
       })
-      
-    print("Cleaning")
-    cleaned_nodes = []
+    
+    print("Extracting Content")
+    cropped_nodes = []
     for node in filtered_nodes:
         try:
-            cleaned_node = clean_contents(query, [node])[0]
-            cleaned_node["content"] = cleaned_node["cleaned_content"]
-            cleaned_node["filed"] = node["filed"]
-            cleaned_node["title"] = node["title"]
-            cleaned_node["doc_type"] = node["doc_type"]
-            cleaned_nodes.append(cleaned_node)
-            print(cleaned_node["node_id"])
+            cropped_node = crop_content(query, node)
+            cropped_node["node_id"] = node["node_id"]
+            cropped_node["content"] = cropped_node["cleaned_content"]
+            cropped_node["filed"] = node["filed"]
+            cropped_node["title"] = node["title"]
+            cropped_node["doc_type"] = node["doc_type"]
+            cropped_nodes.append(cropped_node)
+            print(cropped_node["node_id"])
         except Exception as e:
+            print(e)
             continue
 
     print()
     
     print("Re-Ranking")
-    re_ranked_nodes = re_rank_nodes(filters["companies"][0]["company_name"], query, cleaned_nodes)
+    re_ranked_nodes = re_rank_nodes(filters["companies"][0]["company_name"], query, cropped_nodes)
 
     for node in re_ranked_nodes:
         print(node["node_id"])
@@ -178,7 +181,7 @@ def handle_search(query):
           node["doc_type"] = item["doc_type"]
           break
         
-      for item in cleaned_nodes:
+      for item in cropped_nodes:
         if item["node_id"] == node["node_id"]:
           node["highlight"] = item["highlight"]
           break
