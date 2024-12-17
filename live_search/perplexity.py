@@ -9,11 +9,11 @@ def get_news_articles(query):
         messages = [
             {
                 "role": "system",
-                "content": "Search only for news articles from Trusted Sources"
+                "content": "Search only for news articles and expert reports from Trusted Sources"
             },
             {
                 "role": "user",
-                "content": f"News Articles from Trusted Sources for '{query}'"
+                "content": f"News Articles and Expert Reports from Trusted Sources for '{query}'"
             }
         ]
 

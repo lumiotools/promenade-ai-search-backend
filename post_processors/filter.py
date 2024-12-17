@@ -22,7 +22,12 @@ Your job is to filter nodes based on their `content` while ensuring each node is
 
 **Filtering Guidelines**:  
 
-1. **Remove Administrative Content**:  
+1. **Handle nodes with doc_type as `Industry Report`**:
+    - Only remove the node if it does not contain any useful content or is a kind of empty page. (like page not found, or no content found)
+    - If the node contains any answerable content, then surely keep it.
+    - No strict filtering is required for doc_type = 'Industry Report' node type.
+
+2. **Remove Administrative Content**:  
    - Eliminate nodes with:  
      a) Generic acknowledgments or pleasantries (e.g., "Thank you," "Appreciate it").  
      b) Operator instructions or metadata (e.g., "Duration: X minutes").  
@@ -30,36 +35,39 @@ Your job is to filter nodes based on their `content` while ensuring each node is
      d) Closing remarks or administrative summaries without actionable content (e.g., "Ladies and gentlemen, we have reached the end of our session").  
      e) Any combination of the above.  
 
-2. **Exclude Non-Substantive Nodes**:  
+3. **Exclude Non-Substantive Nodes**:  
    - Remove nodes that:  
      a) Contain only headers, disclaimers, or links (e.g., "More AMAL analysis").  
      b) Summarize participation or metadata without adding meaningful content.  
      c) Include repetitive acknowledgments or sign-offs (e.g., "Thanks," "Operator signoff").  
 
-3. **Preserve Meaningful Content**:  
+4. **Preserve Meaningful Content**:  
    - Retain only nodes which follow the user's query and are with:  
      a) Substantive insights, such as financial data, strategic discussions, or detailed answers.  
      b) Actionable information relevant to the discussion or user query.  
 
-4. **Strict Exclusion of Metadata**:  
+5. **Strict Exclusion of Metadata**:  
    - Explicitly filter out:  
      a) "Call participants" sections or speaker lists unless accompanied by substantive information.  
      b) Duration markers, timestamps, or session management details.  
      c) Disclaimers or boilerplate text (e.g., "This article is a transcript of this conference call...").  
 
-5. **Handle SEC Filings**:  
-   - Preserve all nodes containing SEC filings if they include detailed, substantive information relevant to the query.  
-   - Filter out SEC filings that contain only a title or no actionable content.  
+6. **Handle nodes with doc_type as `SEC Filing`**:  
+   - Preserve all nodes containing doc_type value as `SEC Filing`, no nodes containing doc_type as `SEC Filing` should be eliminated.  
+   - Only Remove the nodes with doc_type as `SEC Filing` that contain only a title or no answerable content.  
+   - Even if there are duplicate form types, retain the node if it contains unique, answerable information.
 
 **Processing Steps**:  
 1. Treat each node as an independent unit for evaluation.  
 2. Identify nodes containing administrative, metadata-heavy, or non-substantive content.  
 3. Aggressively filter out irrelevant content using the guidelines above.  
 4. Retain only nodes with actionable, substantive information.  
-5. For SEC filings, check if the content is substantive:
+5. For doc_type as `SEC Filing`, check if the content is substantive:
    - If it contains details relevant to the query, retain it.  
    - If it only contains a title or no meaningful content, filter it out.  
 6. Ensure the output contains unique nodes based on their `node_id` and maintain correct node mappings.  
+
+
 
 **Examples of Content to Remove**:  
 - Nodes like:  
@@ -111,10 +119,12 @@ def filter_nodes(company_name, query, result_nodes):
                         "items": {
                             "type": "object",
                             "properties": {
-                                "content": {"type": "string"},
+                                # "content": {"type": "string"},
                                 "node_id": {"type": "string"}
                             },
-                            "required": ["content", "node_id"],
+                            "required": [
+                                # "content", 
+                                "node_id"],
                             "additionalProperties": False
                         }
                     }
@@ -129,5 +139,16 @@ def filter_nodes(company_name, query, result_nodes):
     )
 
     res = chat_completion.choices[0].message.content
+    
+    nodes = []
+    
+    for node in json.loads(res)["nodes"]:
+        for result_node in result_nodes:
+            if node["node_id"] == result_node["node_id"]:
+                nodes.append({
+                    "content": result_node["content"],
+                    "node_id": node["node_id"]
+                })
+                break
 
-    return json.loads(res)["nodes"]
+    return nodes

@@ -5,11 +5,11 @@ annotated-types==0.7.0
 anyio==4.6.2.post1
 attrs==24.2.0
 beautifulsoup4==4.12.3
+bs4==0.0.2
 certifi==2024.8.30
 charset-normalizer==3.4.0
 click==8.1.7
 colorama==0.4.6
-crawl4ai==0.3.745
 dataclasses-json==0.6.7
 Deprecated==1.2.15
 dirtyjson==1.0.8
@@ -41,6 +41,7 @@ llama-index-readers-file==0.4.0
 llama-index-readers-llama-parse==0.4.0
 llama-index-vector-stores-pinecone==0.4.1
 llama-parse==0.5.15
+markdownify==0.14.1
 marshmallow==3.23.1
 multidict==6.1.0
 mypy-extensions==1.0.0
@@ -54,7 +55,6 @@ pandas==2.2.3
 pinecone-client==5.0.1
 pinecone-plugin-inference==1.1.0
 pinecone-plugin-interface==0.0.7
-playwright==1.49.1
 propcache==0.2.0
 pydantic==2.9.2
 pydantic_core==2.23.4
