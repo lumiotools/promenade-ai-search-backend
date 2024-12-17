@@ -121,7 +121,8 @@ def crop_content(query, content, is_sec=False):
                             "type": "object",
                             "properties": {
                                 "extracted_content": {"type": "string"},
-
+                                "highlight_words": {
+                                    "type": "array", "items": {"type": "string"}},
                                 "start_words": {
                                     "type": "string",
                                     "description": "The string containing the original contents snippet's paragraph's initial 3 words only. (Not starting with any special characters)"
@@ -132,7 +133,7 @@ def crop_content(query, content, is_sec=False):
                                 }
 
                             },
-                            "required": ["extracted_content", "start_words", "end_words"],
+                            "required": ["extracted_content","highlight_words", "start_words", "end_words"],
                             "additionalProperties": False
                         }
                     },
@@ -154,12 +155,16 @@ def crop_content(query, content, is_sec=False):
         raise Exception("No Match Found")
 
     node = res["data"]
-    
+
     if len(node["extracted_content"]) < 250:
         raise Exception("No Match Found")
 
     cropped_node = {}
     cropped_node["cleaned_content"] = node["extracted_content"]
+    
+    for word in node["highlight_words"]:
+        if word in cropped_node["cleaned_content"]:
+            cropped_node["cleaned_content"] = cropped_node["cleaned_content"].replace(word, f"<span style='background-color: yellow;'>{word}</span>")
 
     start = node["start_words"]
     end = node["end_words"]
