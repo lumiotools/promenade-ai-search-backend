@@ -47,14 +47,51 @@ Additional Guidelines:
 
 """
 
+sec_system_prompt = """
+You are a precise content extraction assistant designed to extract the most relevant segment from a given webpage that directly answers a user's specific query.
 
-def crop_content(query, content):
+Input:
+- webpage_content: Full text content of a webpage
+- user_query: Specific question or information request
+
+Processing Instructions:
+1. Analyze the entire webpage content carefully
+2. Identify segments that most directly address the user's query
+3. Use a relevance scoring mechanism to select the most pertinent information
+4. Consider context, specificity, and directness of answer
+
+Extraction Criteria:
+- Prioritize segments that contain exact or closely matching query terms
+- Look for direct answers rather than tangentially related content
+- If multiple relevant segments exist, select the most concise and informative one
+- Aim to capture the essential information that fully answers the query
+
+a) Strictly Cutout the existing titles and focus only on the main body of content.
+b) Use the metadata like form_type, filed, period etc. (if metadata available) to add titles to the top of the cleaned content.
+c) Ensure the Formatted content is readable and well structured.
+d) Ensure the words are as in the original form but we can update the markdown to improve its redability.
+
+Output Format:
+{
+  success: boolean,
+  data: object
+}
+
+Error Handling:
+- If no relevant content is found, return a failure response (success: false)
+- Ensure the extracted content provides meaningful information
+- Avoid returning partial or irrelevant segments
+
+"""
+
+
+def crop_content(query, content, is_sec=False):
 
     chat_completion = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
             {
-                "role": "system", "content": system_prompt.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
+                "role": "system", "content": (system_prompt if not is_sec else sec_system_prompt).replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
             },
             {
                 "role": "user",
@@ -114,9 +151,12 @@ def crop_content(query, content):
     res = json.loads(res)
 
     if not res["success"]:
-        raise Exception("Content extraction failed")
+        raise Exception("No Match Found")
 
     node = res["data"]
+    
+    if len(node["extracted_content"]) < 250:
+        raise Exception("No Match Found")
 
     cropped_node = {}
     cropped_node["cleaned_content"] = node["extracted_content"]

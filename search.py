@@ -71,8 +71,7 @@ def handle_search(query):
         "IR Page" if "section_name" in node.node.metadata.keys() else "Earnings Call"
       })
       
-    if filters["query_contains_sec_filings"]:
-      result_nodes = [node for node in result_nodes if node["doc_type"] == "SEC Filing"]
+    result_nodes = [node for node in result_nodes if node["doc_type"] != "SEC Filing"]
       
     for node in result_nodes:
       print(node["node_id"])
@@ -147,7 +146,7 @@ def handle_search(query):
     cropped_nodes = []
     for node in filtered_nodes:
         try:
-            cropped_node = crop_content(query, node)
+            cropped_node = crop_content(query, node["content"], node["doc_type"] == "SEC Filing")
             cropped_node["node_id"] = node["node_id"]
             cropped_node["content"] = cropped_node["cleaned_content"]
             cropped_node["filed"] = node["filed"]
