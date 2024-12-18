@@ -17,7 +17,9 @@ def handle_live_sec_search(symbol):
                 "content": sec_content["content"],
                 "node_id": str(uuid4()),
                 "source": sec_content["source"],
+                "title": sec_links[i]["companyName"] + " Form "+ sec_links[i]["formType"],
                 "filed": sec_links[i]["filed"],
+                "form_type": sec_links[i]["formType"]
             })
         
         return nodes

@@ -105,14 +105,14 @@ def handle_search(query):
         "node_id":node["node_id"],
         "source":node["source"],
         "filed": None,
-        "title": None,
+        "title": node["title"],
         "doc_type":"Industry Report"
       })
       filtered_nodes.append({
         "content": node["content"],
         "node_id":node["node_id"],
         "filed": None,
-        "title": None,
+        "title": node["title"],
         "doc_type":"Industry Report"
       })
       
@@ -131,14 +131,16 @@ def handle_search(query):
         "node_id":node["node_id"],
         "source":node["source"],
         "filed": node["filed"],
-        "title": None,
+        "form_type": node["form_type"],
+        "title": node["title"],
         "doc_type":"SEC Filing"
       })
       filtered_nodes.append({
         "content": node["content"],
         "node_id":node["node_id"],
         "filed": node["filed"],
-        "title": None,
+        "form_type": node["form_type"],
+        "title": node["title"],
         "doc_type":"SEC Filing"
       })
     
@@ -177,6 +179,7 @@ def handle_search(query):
       for item in result_nodes:
         if item["node_id"] == node["node_id"]:
           node["source"] = item["source"]
+          node["title"] = item["title"]
           node["doc_type"] = item["doc_type"]
           break
         
@@ -194,6 +197,7 @@ def handle_search(query):
       final_nodes.append({
         "node_id":node["node_id"],
         "content": node["content"],
+        "title":node["title"],
         "source":node["source"]+"#:~:text="+item["highlight"],
         "doc_type":node["doc_type"]
       })
@@ -201,6 +205,7 @@ def handle_search(query):
       if not node["source"] in [source["url"] for source in valid_sources]:
         valid_sources.append({
           "doc_type":node["doc_type"],
+          "title":node["title"],
           "url":node["source"]
         })
       
@@ -208,6 +213,7 @@ def handle_search(query):
       if not node["source"] in [source["url"] for source in valid_sources] and not node["source"] in [source["url"] for source in invalid_sources]:
         invalid_sources.append({
                                 "doc_type":node["doc_type"],
+                                "title":node["title"],
                                 "url":node["source"]
                                })
       

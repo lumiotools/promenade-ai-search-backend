@@ -20,6 +20,7 @@ def get_pages_content(urls):
         print(f"Got response from {url[:30]}...")
         
         soup = BeautifulSoup(response.text, 'html.parser')
+        title = soup.title.string if soup.title else "Industry Report"
         html_content = soup.find('body')
         markdown_content = md(str(html_content))
         
@@ -31,7 +32,8 @@ def get_pages_content(urls):
         
         contents.append({
             "content":markdown_content,
-            "source": url
+            "source": url,
+            "title": title
         })
         
     return contents

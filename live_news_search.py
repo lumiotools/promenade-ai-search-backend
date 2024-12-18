@@ -17,7 +17,8 @@ def handle_live_news_search(query):
             nodes.append({
                 "content": news_content["content"],
                 "node_id": str(uuid4()),
-                "source": news_content["source"]
+                "source": news_content["source"],
+                "title": news_content["title"],
             })
         
         return nodes
