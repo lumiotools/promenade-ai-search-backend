@@ -164,7 +164,7 @@ def crop_content(query, content, is_sec=False):
     
     for word in node["highlight_words"]:
         if word in cropped_node["cleaned_content"]:
-            cropped_node["cleaned_content"] = cropped_node["cleaned_content"].replace(word, f"<span style='background-color: yellow;'>{word}</span>")
+            cropped_node["cleaned_content"] = cropped_node["cleaned_content"].replace(word, f"<mark>{word}</mark>")
 
     start = node["start_words"]
     end = node["end_words"]
