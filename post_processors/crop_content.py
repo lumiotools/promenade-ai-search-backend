@@ -82,6 +82,11 @@ Error Handling:
 - Ensure the extracted content provides meaningful information
 - Avoid returning partial or irrelevant segments
 
+*Note:*
+- DO NOT INCLUDE ANY SEC FILINGS LINKS OR URLS IN THE OUTPUT
+- IF THE CONTENT ONLY CONTAINS SEC FILINGS LINKS OR URLS, RETURN A FAILURE RESPONSE
+- REMOVE THIS KIND OF CONTENT FROM THE OUTPUT `Company: ... sec_filing_form_type: ... filed_on: ... period: ... Content: ...`, FOCUS ON MAIN CONTENT STARTING AFTER THIS.
+
 """
 
 

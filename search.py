@@ -65,13 +65,19 @@ def handle_search(query):
         "content": node.get_content(),
         "node_id":node.node.node_id,
         "source":node.node.metadata["url"],
+        "company_name":node.node.metadata["company_name"] if "company_name" in node.node.metadata.keys() else None,
+        "form_type":node.node.metadata["form_type"] if "form_type" in node.node.metadata.keys() else None,
         "filed":node.node.metadata["filed"] if "filed" in node.node.metadata.keys() else None,
         "title":node.node.metadata["title"] if "title" in node.node.metadata.keys() else None,
         "doc_type":"SEC Filing" if "form_type" in node.node.metadata.keys() else 
         "IR Page" if "section_name" in node.node.metadata.keys() else "Earnings Call"
       })
       
-    result_nodes = [node for node in result_nodes if node["doc_type"] != "SEC Filing"]
+      for i,node in enumerate(result_nodes):
+        if node["doc_type"] == "SEC Filing":
+          result_nodes[i]["title"] = result_nodes[i]["company_name"] + ". Form " + result_nodes[i]["form_type"] + " - " + result_nodes[i]["filed"] if result_nodes[i]["form_type"] else result_nodes[i]["company_name"] + ". Form SEC Filing"
+    
+    # result_nodes = [node for node in result_nodes if node["doc_type"] != "SEC Filing"]
       
     for node in result_nodes:
       print(node["node_id"])
@@ -116,33 +122,33 @@ def handle_search(query):
         "doc_type":"Industry Report"
       })
       
-    print("Performing Live SEC Filing Search...")
-    live_search_nodes = []
-    for company in filters["companies"]:
-      live_search_nodes.extend(handle_live_sec_search(company["symbol"]))
+    # print("Performing Live SEC Filing Search...")
+    # live_search_nodes = []
+    # for company in filters["companies"]:
+    #   live_search_nodes.extend(handle_live_sec_search(company["symbol"]))
     
-    for node in live_search_nodes:
-      print(node["node_id"])
+    # for node in live_search_nodes:
+    #   print(node["node_id"])
       
-    print()
-    for node in live_search_nodes:      
-      result_nodes.append({
-        "content": node["content"],
-        "node_id":node["node_id"],
-        "source":node["source"],
-        "filed": node["filed"],
-        "form_type": node["form_type"],
-        "title": node["title"],
-        "doc_type":"SEC Filing"
-      })
-      filtered_nodes.append({
-        "content": node["content"],
-        "node_id":node["node_id"],
-        "filed": node["filed"],
-        "form_type": node["form_type"],
-        "title": node["title"],
-        "doc_type":"SEC Filing"
-      })
+    # print()
+    # for node in live_search_nodes:      
+    #   result_nodes.append({
+    #     "content": node["content"],
+    #     "node_id":node["node_id"],
+    #     "source":node["source"],
+    #     "filed": node["filed"],
+    #     "form_type": node["form_type"],
+    #     "title": node["title"],
+    #     "doc_type":"SEC Filing"
+    #   })
+    #   filtered_nodes.append({
+    #     "content": node["content"],
+    #     "node_id":node["node_id"],
+    #     "filed": node["filed"],
+    #     "form_type": node["form_type"],
+    #     "title": node["title"],
+    #     "doc_type":"SEC Filing"
+    #   })
     
     print("Extracting Content")
     cropped_nodes = []
