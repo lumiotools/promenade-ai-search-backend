@@ -71,7 +71,7 @@ def handle_search(query):
         "IR Page" if "section_name" in node.node.metadata.keys() else "Earnings Call"
       })
       
-    result_nodes = [node for node in result_nodes if node["doc_type"] != "SEC Filing"]
+    # result_nodes = [node for node in result_nodes if node["doc_type"] != "SEC Filing"]
       
     for node in result_nodes:
       print(node["node_id"])
