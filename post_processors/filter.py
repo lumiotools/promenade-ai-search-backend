@@ -96,14 +96,14 @@ def filter_nodes(company_name, query, result_nodes):
         },
             {"role": "user",
              "content": f"""
-              This is the company name: {company_name}
+             {"This is the company name: "+ company_name if company_name else ""}
               This is the user query: {query}
 
               These are my nodes:
               {json.dumps(result_nodes).replace("UNITED STATES SECURITIES AND EXCHANGE COMMISSION","").replace("Washington, D.C.","")}
               
               Core Objective:
-              Deliver only the nodes that are the most likely to answer the user's query or provide meaningful context about the specified company.
+              Deliver only the nodes that are the most likely to answer the user's query or provide meaningful context{" about the specified company" if company_name else ""}.
               """.replace('“', '"').replace('”', '"').replace('‘', "'").replace('’', "'")
              }
         ],

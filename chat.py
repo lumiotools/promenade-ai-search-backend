@@ -9,12 +9,11 @@ openai = OpenAI()
 
 def handle_chat(node, search_query, chat_history, message):
     try:
-        original_content = get_pages_content([node.source])[0]["content"]
+        # original_content = get_pages_content([node.source])[0]["content"]
 
         system_prompt = f"""
         You are provided with the following context information:
 
-        *Original Content:* {original_content}
         *User Search Query:* {search_query}
         *Snippet of Original Content that answers above search query:* {node.content}
 

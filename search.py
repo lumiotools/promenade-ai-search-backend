@@ -93,7 +93,7 @@ def handle_search(query):
     print()
       
     print("Filtering")
-    filtered_nodes = filter_nodes(filters["companies"][0]["company_name"] if len(filters["companies"])>0 else "",query,result_nodes)
+    filtered_nodes = filter_nodes(filters["companies"][0]["company_name"] if len(filters["companies"])>0 else None,query,result_nodes)
     
     for node in filtered_nodes:
       print(node["node_id"])
@@ -177,7 +177,7 @@ def handle_search(query):
     print()
     
     print("Re-Ranking")
-    re_ranked_nodes = re_rank_nodes(filters["companies"][0]["company_name"] if len(filters["companies"]) > 0 else "", query, cropped_nodes)
+    re_ranked_nodes = re_rank_nodes(filters["companies"][0]["company_name"] if len(filters["companies"]) > 0 else None, query, cropped_nodes)
 
     for node in re_ranked_nodes:
         print(node["node_id"])
