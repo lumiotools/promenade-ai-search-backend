@@ -46,7 +46,7 @@ def handle_search(query):
     if len(filters["companies"]) > 0:
       retriever = VectorIndexRetriever(
           index=vector_index,
-          similarity_top_k=30,
+          similarity_top_k=40,
           filters=MetadataFilters(
               filters= [ 
                   MetadataFilter(
@@ -85,7 +85,7 @@ def handle_search(query):
         if node["doc_type"] == "SEC Filing":
           result_nodes[i]["title"] = result_nodes[i]["company_name"] + ". Form " + result_nodes[i]["form_type"] + " - " + result_nodes[i]["filed"] if result_nodes[i]["form_type"] else result_nodes[i]["company_name"] + ". Form SEC Filing"
     
-    # result_nodes = [node for node in result_nodes if node["doc_type"] != "SEC Filing"]
+    result_nodes_sec = [node for node in result_nodes if node["doc_type"] == "SEC Filing"]
       
     for node in result_nodes:
       print(node["node_id"])
@@ -130,35 +130,39 @@ def handle_search(query):
         "doc_type":"Industry Report"
       })
       
-    # print("Performing Live SEC Filing Search...")
-    # live_search_nodes = []
-    # for company in filters["companies"]:
-    #   live_search_nodes.extend(handle_live_sec_search(company["symbol"]))
+    # if len(result_nodes_sec) <= 5:
+    print("Performing Live SEC Filing Search...")
+    live_search_nodes = []
     
-    # for node in live_search_nodes:
-    #   print(node["node_id"])
+    for company in filters["companies"]:
+      live_search_nodes.extend(handle_live_sec_search(company["symbol"]))
       
-    # print()
-    # for node in live_search_nodes:      
-    #   result_nodes.append({
-    #     "content": node["content"],
-    #     "node_id":node["node_id"],
-    #     "source":node["source"],
-    #     "filed": node["filed"],
-    #     "form_type": node["form_type"],
-    #     "title": node["title"],
-    #     "doc_type":"SEC Filing"
-    #   })
-    #   filtered_nodes.append({
-    #     "content": node["content"],
-    #     "node_id":node["node_id"],
-    #     "filed": node["filed"],
-    #     "form_type": node["form_type"],
-    #     "title": node["title"],
-    #     "doc_type":"SEC Filing"
-    #   })
+    for node in live_search_nodes:
+      print(node["node_id"])
+      
+    print()
+    
+    for node in live_search_nodes:      
+      result_nodes.append({
+        "content": node["content"],
+        "node_id":node["node_id"],
+        "source":node["source"],
+        "filed": node["filed"],
+        "form_type": node["form_type"],
+        "title": node["title"],
+        "doc_type":"SEC Filing"
+      })
+      filtered_nodes.append({
+        "content": node["content"],
+        "node_id":node["node_id"],
+        "filed": node["filed"],
+        "form_type": node["form_type"],
+        "title": node["title"],
+        "doc_type":"SEC Filing"
+      })
     
     print("Extracting Content")
+    
     cropped_nodes = []
     for node in filtered_nodes:
         try:

@@ -45,6 +45,8 @@ Additional Guidelines:
 - Preserve any critical context or nuance from the original content
 - Be precise and objective in content selection
 
+Note:
+- Strictly reformat the markdown of the extracted content to increase its readability.
 """
 
 sec_system_prompt = """
@@ -87,6 +89,8 @@ Error Handling:
 - IF THE CONTENT ONLY CONTAINS SEC FILINGS LINKS OR URLS, RETURN A FAILURE RESPONSE
 - REMOVE THIS KIND OF CONTENT FROM THE OUTPUT `Company: ... sec_filing_form_type: ... filed_on: ... period: ... Content: ...`, FOCUS ON MAIN CONTENT STARTING AFTER THIS.
 
+Note:
+- Strictly reformat the markdown to increase readability if necessary.
 """
 
 
