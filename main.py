@@ -31,8 +31,8 @@ class MessageModel(BaseModel):
 class ChatModel(BaseModel):
     message: str
     chat_history: List[MessageModel]
-    node: NodeModel
     search_query: str
+    nodes: List[NodeModel]
 
 @app.get("/")
 def read_root():
@@ -49,7 +49,7 @@ def search(body: QueryModel):
 @app.post("/api/chat")
 def chat(body: ChatModel):
     try:
-        answer = handle_chat(body.node,body.search_query, body.chat_history, body.message)
+        answer = handle_chat(body.nodes, body.search_query, body.chat_history, body.message)
         return {"response": answer}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

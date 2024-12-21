@@ -7,7 +7,7 @@ load_dotenv()
 openai = OpenAI()
 
 
-def handle_chat(node, search_query, chat_history, message):
+def handle_chat(nodes, search_query, chat_history, message):
     try:
         # original_content = get_pages_content([node.source])[0]["content"]
 
@@ -15,7 +15,7 @@ def handle_chat(node, search_query, chat_history, message):
         You are provided with the following context information:
 
         *User Search Query:* {search_query}
-        *Snippet of Original Content that answers above search query:* {node.content}
+        *Snippets of Original nodes Content that answers above search query:* {[node.content for node in nodes]}
 
         Based on the above information, provide a response in to the user's message.
         If users message is out of context, then say you dont have information on that.
