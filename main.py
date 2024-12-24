@@ -78,6 +78,17 @@ def chat(body: ChatModel):
 def upload_file(files: Optional[List[UploadFile]] = []):
     if len(files) == 0:
         raise HTTPException(status_code=400, detail="No files uploaded")
+    
+    hasInvalidFiles = False
+    
+    for file in files:
+        if file.content_type != "application/pdf":
+            hasInvalidFiles = True
+            break
+    
+    if hasInvalidFiles:
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+    
     try:
         file_ids = []
         for file in files:

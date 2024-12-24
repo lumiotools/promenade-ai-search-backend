@@ -35,7 +35,7 @@ def handle_live_document_search(file_ids: List[str]):
                 "node_id": node_id,
                 "content": content,
                 "title": metadata["filename"],
-                "source": f"{os.getenv("API_BASE_URL")}/files/{node_id}.pdf",
+                "source": f"{os.getenv('API_BASE_URL')}/files/{node_id}.pdf",
             })
         
         return nodes
