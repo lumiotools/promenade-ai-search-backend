@@ -29,6 +29,10 @@ Extraction Criteria:
 - If multiple relevant segments exist, select the most concise and informative one
 - Aim to capture the essential information that fully answers the query
 
+Transformation Instructions:
+- Convert the extracted segment to plain text by removing any markdown elements like lists, tables, headings, subheadings, etc.
+- Trim the extracted segment to a maximum of 50 words
+
 Output Format:
 {
   success: boolean,
@@ -37,16 +41,11 @@ Output Format:
 
 Error Handling:
 - If no relevant content is found, return a failure response
-- Ensure the extracted content provides meaningful information
-- Avoid returning partial or irrelevant segments
 
 Additional Guidelines:
 - Maintain the original formatting of the extracted text
 - Preserve any critical context or nuance from the original content
 - Be precise and objective in content selection
-
-Note:
-- Strictly reformat the markdown of the extracted content to increase its readability.
 """
 
 sec_system_prompt = """
@@ -68,10 +67,13 @@ Extraction Criteria:
 - If multiple relevant segments exist, select the most concise and informative one
 - Aim to capture the essential information that fully answers the query
 
+Transformation Instructions:
+- Convert the extracted segment to plain text by removing any markdown elements like lists, tables, headings, subheadings, etc.
+- Trim the extracted segment to a maximum of 50 words
+
 a) Strictly Cutout the existing titles and focus only on the main body of content.
-b) Use the metadata like form_type, filed, period etc. (if metadata available) to add titles to the top of the cleaned content.
-c) Ensure the Formatted content is readable and well structured.
-d) Ensure the words are as in the original form but we can update the markdown to improve its redability.
+b) Make the Formatted content is readable and well structured as a plain text.
+c) Keep the words as in the original form but we need to remove the markdown to improve its redability as plain text.
 
 Output Format:
 {
@@ -81,16 +83,11 @@ Output Format:
 
 Error Handling:
 - If no relevant content is found, return a failure response (success: false)
-- Ensure the extracted content provides meaningful information
-- Avoid returning partial or irrelevant segments
 
 *Note:*
 - DO NOT INCLUDE ANY SEC FILINGS LINKS OR URLS IN THE OUTPUT
 - IF THE CONTENT ONLY CONTAINS SEC FILINGS LINKS OR URLS, RETURN A FAILURE RESPONSE
 - REMOVE THIS KIND OF CONTENT FROM THE OUTPUT `Company: ... sec_filing_form_type: ... filed_on: ... period: ... Content: ...`, FOCUS ON MAIN CONTENT STARTING AFTER THIS.
-
-Note:
-- Strictly reformat the markdown to increase readability if necessary.
 """
 
 
@@ -165,15 +162,16 @@ def crop_content(query, content, is_sec=False):
 
     node = res["data"]
 
-    if len(node["extracted_content"]) < 250:
-        raise Exception("No Match Found")
+    # if len(node["extracted_content"]) < 30:
+    #     raise Exception("No Match Found")
 
     cropped_node = {}
     cropped_node["cleaned_content"] = node["extracted_content"]
+    cropped_node["highlight_words"] = node["highlight_words"]
     
-    for word in node["highlight_words"]:
-        if word in cropped_node["cleaned_content"]:
-            cropped_node["cleaned_content"] = cropped_node["cleaned_content"].replace(word, f"<mark>{word}</mark>")
+    # for word in node["highlight_words"]:
+    #     if word in cropped_node["cleaned_content"]:
+    #         cropped_node["cleaned_content"] = cropped_node["cleaned_content"].replace(word, f"<mark>{word}</mark>")
 
     start = node["start_words"]
     end = node["end_words"]

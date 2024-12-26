@@ -58,8 +58,9 @@ def read_root():
 @app.post("/api/search")
 async def search(body: QueryModel):
     try:
-        answer, valid_sources, invalid_sources = handle_search(body.message, file_ids=body.files)
-        return {"response": answer, "valid_sources": valid_sources, "invalid_sources": invalid_sources}
+        nodes, valid_sources, invalid_sources = handle_search(body.message, file_ids=body.files)
+        summary = handle_chat([NodeModel(**node) for node in nodes], body.message, [], "Please provide me the summary of "+ body.message + " in bullet points (max 5 points).")
+        return {"response": nodes, "summary": summary, "valid_sources": valid_sources, "invalid_sources": invalid_sources}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
