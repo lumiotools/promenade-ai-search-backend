@@ -1,26 +1,19 @@
-import urllib.parse
+from fastapi import UploadFile
 from pinecone import Pinecone
 from llama_index.core import VectorStoreIndex
 from llama_index.core.retrievers import VectorIndexRetriever
 from llama_index.vector_stores.pinecone import PineconeVectorStore
 from llama_index.embeddings.openai import OpenAIEmbedding
-from llama_index.llms.openai import OpenAI
-from llama_index.core.base.llms.types import ChatMessage, MessageRole
-from llama_index.core.chat_engine import ContextChatEngine
-from llama_index.core.memory import ChatMemoryBuffer
 from dotenv import load_dotenv
-from llama_index.core.postprocessor.types import BaseNodePostprocessor
-from llama_index.core.schema import NodeWithScore, QueryBundle
 from llama_index.core.vector_stores.types import MetadataFilters, MetadataFilter, FilterOperator
 from typing import List
-from typing import Optional
 from extract_query_details import extract_query_details
 from post_processors.filter import filter_nodes
 from post_processors.re_rank_nodes import re_rank_nodes
-from post_processors.clean_content import clean_contents
 from post_processors.crop_content import crop_content
 from live_news_search import handle_live_news_search
 from live_sec_search import handle_live_sec_search
+from live_document_search import handle_live_document_search
 import json
 
 load_dotenv()
@@ -37,7 +30,7 @@ vector_index = VectorStoreIndex.from_vector_store(
     vector_store=vector_store, embed_model=OpenAIEmbedding(model="text-embedding-3-small"))
 
 
-def handle_search(query):
+def handle_search(query, file_ids: List[str]):
   try:
     filters =extract_query_details(query)
     
@@ -61,7 +54,7 @@ def handle_search(query):
     else:
       retriever = VectorIndexRetriever(
           index=vector_index,
-          similarity_top_k=30
+          similarity_top_k=40
       )
     
     nodes = retriever.retrieve(query)
@@ -105,6 +98,30 @@ def handle_search(query):
           node["doc_type"] = result_node["doc_type"]
       
     print()
+    
+    print("Performing Live Uploaded Documents Search...")
+    document_nodes = handle_live_document_search(file_ids)
+    
+    for node in document_nodes:
+      print(node["node_id"])
+      
+    print()
+    for node in document_nodes:      
+      result_nodes.append({
+        "content": node["content"],
+        "node_id":node["node_id"],
+        "source":node["source"],
+        "filed": None,
+        "title": node["title"],
+        "doc_type":"Uploaded Document"
+      })
+      filtered_nodes.append({
+        "content": node["content"],
+        "node_id":node["node_id"],
+        "filed": None,
+        "title": node["title"],
+        "doc_type":"Uploaded Document"
+      })
     
     print("Performing Live News Search...")
     live_search_nodes = handle_live_news_search(query)
