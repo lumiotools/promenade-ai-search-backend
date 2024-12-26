@@ -1,6 +1,5 @@
 from uuid import uuid4
 from typing import List
-from fastapi import UploadFile
 from pypdf import PdfReader
 import os
 import json
@@ -22,6 +21,9 @@ def handle_live_document_search(file_ids: List[str]):
             
             with open(os.path.join(UPLOAD_DIR, file_id, "metadata.json"), "r") as metadata_file:
                 metadata = json.load(metadata_file)
+            
+            
+            print(f"Processing Uploaded Document: {metadata['filename']}")
                 
             reader = PdfReader(os.path.join(UPLOAD_DIR, file_id, "document.pdf"))
             page_count = len(reader.pages)
@@ -32,6 +34,8 @@ def handle_live_document_search(file_ids: List[str]):
                     if index > start:
                         node_content += "\n"
                     node_content += reader.pages[index].extract_text(extraction_mode="layout", space_width=10)
+                
+                print(f"Extracted content from pages {start} to {end} of {metadata['filename']}")
                 
                 nodes.append({
                     "node_id": str(uuid4()),
