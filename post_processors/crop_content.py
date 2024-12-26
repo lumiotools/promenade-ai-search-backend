@@ -28,10 +28,10 @@ Extraction Criteria:
 - Look for direct answers rather than tangentially related content
 - If multiple relevant segments exist, select the most concise and informative one
 - Aim to capture the essential information that fully answers the query
-- The extracted segment should not contain more than 50 words strictly in any case
 
 Transformation Instructions:
 - Convert the extracted segment to plain text by removing any markdown elements like lists, tables, headings, subheadings, etc.
+- Trim the extracted segment to a maximum of 50 words
 
 Output Format:
 {
@@ -66,10 +66,10 @@ Extraction Criteria:
 - Look for direct answers rather than tangentially related content
 - If multiple relevant segments exist, select the most concise and informative one
 - Aim to capture the essential information that fully answers the query
-- The extracted segment should not contain more than 50 words strictly in any case
 
 Transformation Instructions:
 - Convert the extracted segment to plain text by removing any markdown elements like lists, tables, headings, subheadings, etc.
+- Trim the extracted segment to a maximum of 50 words
 
 a) Strictly Cutout the existing titles and focus only on the main body of content.
 b) Make the Formatted content is readable and well structured as a plain text.
@@ -162,8 +162,8 @@ def crop_content(query, content, is_sec=False):
 
     node = res["data"]
 
-    if len(node["extracted_content"]) < 250:
-        raise Exception("No Match Found")
+    # if len(node["extracted_content"]) < 30:
+    #     raise Exception("No Match Found")
 
     cropped_node = {}
     cropped_node["cleaned_content"] = node["extracted_content"]
