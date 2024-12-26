@@ -130,6 +130,7 @@ def re_rank_nodes(company_name, query, result_nodes):
             if node["node_id"] == result_node["node_id"]:
                 nodes.append({
                     "content": result_node["content"],
+                    "highlight_words": result_node["highlight_words"],
                     "node_id": node["node_id"]
                 })
                 break

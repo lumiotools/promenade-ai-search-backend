@@ -15,7 +15,8 @@ from live_news_search import handle_live_news_search
 from live_sec_search import handle_live_sec_search
 from live_document_search import handle_live_document_search
 import json
-
+import concurrent.futures
+    
 load_dotenv()
 
 pinecone = Pinecone()
@@ -99,9 +100,22 @@ def handle_search(query, file_ids: List[str]):
       
     print()
     
-    print("Performing Live Uploaded Documents Search...")
-    document_nodes = handle_live_document_search(file_ids)
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+      print("Performing Live Uploaded Documents Search...")
+      future_document_search = executor.submit(handle_live_document_search, file_ids)
+      print("Performing Live News Search...")
+      future_news_search = executor.submit(handle_live_news_search, query)
+      print("Performing Live SEC Filing Search...")
+      future_sec_search = executor.submit(lambda: [handle_live_sec_search(company["symbol"]) for company in filters["companies"]])
+
+      document_nodes = future_document_search.result()
+      live_search_nodes = future_news_search.result()
+      live_sec_nodes = [node for sublist in future_sec_search.result() for node in sublist]
     
+    # print("Performing Live Uploaded Documents Search...")
+    # document_nodes = handle_live_document_search(file_ids)
+    
+    print("Live Uploaded Documents Search Results")
     for node in document_nodes:
       print(node["node_id"])
       
@@ -123,9 +137,10 @@ def handle_search(query, file_ids: List[str]):
         "doc_type":"Uploaded Document"
       })
     
-    print("Performing Live News Search...")
-    live_search_nodes = handle_live_news_search(query)
+    # print("Performing Live News Search...")
+    # live_search_nodes = handle_live_news_search(query)
     
+    print("Live News Search Results")
     for node in live_search_nodes:
       print(node["node_id"])
       
@@ -148,18 +163,19 @@ def handle_search(query, file_ids: List[str]):
       })
       
     # if len(result_nodes_sec) <= 5:
-    print("Performing Live SEC Filing Search...")
-    live_search_nodes = []
+    # print("Performing Live SEC Filing Search...")
+    # live_search_nodes = []
     
-    for company in filters["companies"]:
-      live_search_nodes.extend(handle_live_sec_search(company["symbol"]))
-      
-    for node in live_search_nodes:
+    # for company in filters["companies"]:
+    #   live_search_nodes.extend(handle_live_sec_search(company["symbol"]))
+    
+    print("Live SEC Filing Search Results")
+    for node in live_sec_nodes:
       print(node["node_id"])
       
     print()
     
-    for node in live_search_nodes:      
+    for node in live_sec_nodes:      
       result_nodes.append({
         "content": node["content"],
         "node_id":node["node_id"],
@@ -177,25 +193,52 @@ def handle_search(query, file_ids: List[str]):
         "title": node["title"],
         "doc_type":"SEC Filing"
       })
-    
-    print("Extracting Content")
-    
-    cropped_nodes = []
-    for node in filtered_nodes:
-        try:
-            cropped_node = crop_content(query, node["content"], node["doc_type"] == "SEC Filing")
-            cropped_node["node_id"] = node["node_id"]
-            cropped_node["content"] = cropped_node["cleaned_content"]
-            cropped_node["filed"] = node["filed"]
-            cropped_node["title"] = node["title"]
-            cropped_node["doc_type"] = node["doc_type"]
-            cropped_nodes.append(cropped_node)
-            print(cropped_node["node_id"])
-        except Exception as e:
-            print(e)
-            continue
 
+    print("Extracting Content")
+    cropped_nodes = []
+
+    def process_node(node):
+      try:
+        cropped_node = crop_content(query, node["content"], node["doc_type"] == "SEC Filing")
+        cropped_node["node_id"] = node["node_id"]
+        cropped_node["content"] = cropped_node["cleaned_content"]
+        cropped_node["highlight_words"] = cropped_node["highlight_words"]
+        cropped_node["filed"] = node["filed"]
+        cropped_node["title"] = node["title"]
+        cropped_node["doc_type"] = node["doc_type"]
+        print(cropped_node["node_id"])
+        return cropped_node
+      except Exception as e:
+        print(e)
+        return None
+
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+      future_to_node = {executor.submit(process_node, node): node for node in filtered_nodes}
+      for future in concurrent.futures.as_completed(future_to_node):
+        cropped_node = future.result()
+        if cropped_node:
+          cropped_nodes.append(cropped_node)
+    
     print()
+          
+    # print("Extracting Content")
+    
+    # cropped_nodes = []
+    # for node in filtered_nodes:
+    #     try:
+    #         cropped_node = crop_content(query, node["content"], node["doc_type"] == "SEC Filing")
+    #         cropped_node["node_id"] = node["node_id"]
+    #         cropped_node["content"] = cropped_node["cleaned_content"]
+    #         cropped_node["filed"] = node["filed"]
+    #         cropped_node["title"] = node["title"]
+    #         cropped_node["doc_type"] = node["doc_type"]
+    #         cropped_nodes.append(cropped_node)
+    #         print(cropped_node["node_id"])
+    #     except Exception as e:
+    #         print(e)
+    #         continue
+
+    # print()
     
     print("Re-Ranking")
     re_ranked_nodes = re_rank_nodes(filters["companies"][0]["company_name"] if len(filters["companies"]) > 0 else None, query, cropped_nodes)
@@ -232,6 +275,7 @@ def handle_search(query, file_ids: List[str]):
       final_nodes.append({
         "node_id":node["node_id"],
         "content": node["content"],
+        "highlight_words": node["highlight_words"],
         "title":node["title"],
         "source":node["source"]+"#:~:text="+item["highlight"],
         "doc_type":node["doc_type"]
