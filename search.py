@@ -12,6 +12,7 @@ from post_processors.filter import filter_nodes
 from post_processors.re_rank_nodes import re_rank_nodes
 from post_processors.crop_content import crop_content
 from live_news_search import handle_live_news_search
+from live_google_news_rss_search import handle_live_google_news_rss_search
 from live_sec_search import handle_live_sec_search
 from live_document_search import handle_live_document_search
 import json
@@ -105,11 +106,14 @@ def handle_search(query, file_ids: List[str]):
       future_document_search = executor.submit(handle_live_document_search, file_ids)
       print("Performing Live News Search...")
       future_news_search = executor.submit(handle_live_news_search, query)
+      print("Performing Live Google News RSS Search...")
+      future_google_news_rss_search = executor.submit(lambda: handle_live_google_news_rss_search(query))
       print("Performing Live SEC Filing Search...")
       future_sec_search = executor.submit(lambda: [handle_live_sec_search(company["symbol"]) for company in filters["companies"]])
 
       document_nodes = future_document_search.result()
       live_search_nodes = future_news_search.result()
+      live_google_news_rss_nodes = future_google_news_rss_search.result()
       live_sec_nodes = [node for sublist in future_sec_search.result() for node in sublist]
     
     # print("Performing Live Uploaded Documents Search...")
@@ -160,6 +164,28 @@ def handle_search(query, file_ids: List[str]):
         "filed": None,
         "title": node["title"],
         "doc_type":"Industry Report"
+      })
+      
+    print("Live Google News RSS Search Results")
+    for node in live_google_news_rss_nodes:
+      print(node["node_id"])
+      
+    print()
+    for node in live_google_news_rss_nodes:
+      result_nodes.append({
+        "content": node["content"],
+        "node_id":node["node_id"],
+        "source":node["source"],
+        "filed": None,
+        "title": node["title"],
+        "doc_type":"Press"
+      })
+      filtered_nodes.append({
+        "content": node["content"],
+        "node_id":node["node_id"],
+        "filed": None,
+        "title": node["title"],
+        "doc_type":"Press"
       })
       
     # if len(result_nodes_sec) <= 5:

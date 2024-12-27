@@ -131,11 +131,11 @@ def crop_content(query, content, is_sec=False):
                                     "type": "array", "items": {"type": "string"}},
                                 "start_words": {
                                     "type": "string",
-                                    "description": "The string containing the original contents snippet's paragraph's initial 3 words only. (Not starting with any special characters)"
+                                    "description": "The string containing the original contents (strictly content provided in input) snippet's paragraph's initial 3 words only. (Not starting with any special characters)"
                                 },
                                 "end_words": {
                                     "type": "string",
-                                    "description": "The string containing the original contents snippet's paragraph's ending 3 words only. (Not ending with any special characters)"
+                                    "description": "The string containing the original contents (strictly content provided in input) snippet's paragraph's ending 3 words only. (Not ending with any special characters)"
                                 }
 
                             },
