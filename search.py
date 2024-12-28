@@ -17,6 +17,7 @@ from live_sec_search import handle_live_sec_search
 from live_document_search import handle_live_document_search
 import json
 import concurrent.futures
+from pydantic import BaseModel
     
 load_dotenv()
 
@@ -31,8 +32,11 @@ vector_store = PineconeVectorStore(pinecone_index=pinecone_index)
 vector_index = VectorStoreIndex.from_vector_store(
     vector_store=vector_store, embed_model=OpenAIEmbedding(model="text-embedding-3-small"))
 
-
-def handle_search(query, file_ids: List[str]):
+class FileModel(BaseModel):
+    name: str
+    url: str
+    
+def handle_search(query, files: List[FileModel]):
   try:
     filters =extract_query_details(query)
     
@@ -103,7 +107,7 @@ def handle_search(query, file_ids: List[str]):
     
     with concurrent.futures.ThreadPoolExecutor() as executor:
       print("Performing Live Uploaded Documents Search...")
-      future_document_search = executor.submit(handle_live_document_search, file_ids)
+      future_document_search = executor.submit(handle_live_document_search, files)
       print("Performing Live News Search...")
       future_news_search = executor.submit(handle_live_news_search, query)
       print("Performing Live Google News RSS Search...")
@@ -117,7 +121,7 @@ def handle_search(query, file_ids: List[str]):
       live_sec_nodes = [node for sublist in future_sec_search.result() for node in sublist]
     
     # print("Performing Live Uploaded Documents Search...")
-    # document_nodes = handle_live_document_search(file_ids)
+    # document_nodes = handle_live_document_search(files)
     
     print("Live Uploaded Documents Search Results")
     for node in document_nodes:
