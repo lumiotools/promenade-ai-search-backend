@@ -25,10 +25,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+class FileModel(BaseModel):
+    name: str
+    url: str
 
 class QueryModel(BaseModel):
     message: str
-    files: Optional[List[str]] = []
+    files: Optional[List[FileModel]] = []
 
 
 class NodeModel(BaseModel):
@@ -58,7 +61,7 @@ def read_root():
 @app.post("/api/search")
 async def search(body: QueryModel):
     try:
-        nodes, valid_sources, invalid_sources = handle_search(body.message, file_ids=body.files)
+        nodes, valid_sources, invalid_sources = handle_search(body.message, files=body.files)
         summary = handle_chat([NodeModel(**node) for node in nodes], body.message, [], "Please provide me the summary of "+ body.message + " in bullet points (max 5 points).")
         return {"response": nodes, "summary": summary, "valid_sources": valid_sources, "invalid_sources": invalid_sources}
     except Exception as e:
@@ -73,49 +76,6 @@ def chat(body: ChatModel):
         return {"response": answer}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.post("/api/upload_files")
-def upload_file(files: Optional[List[UploadFile]] = []):
-    if len(files) == 0:
-        raise HTTPException(status_code=400, detail="No files uploaded")
-    
-    hasInvalidFiles = False
-    
-    for file in files:
-        if file.content_type != "application/pdf":
-            hasInvalidFiles = True
-            break
-    
-    if hasInvalidFiles:
-        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
-    
-    try:
-        file_ids = []
-        for file in files:
-            file_id = str(uuid4())
-            file_path = f"{DOCUMENTS_UPLOAD_DIR}/{file_id}"
-            os.makedirs(file_path, exist_ok=True)
-            with open(f"{file_path}/document.pdf", "wb") as f:
-                f.write(file.file.read())
-
-            metadata = {
-                "filename": file.filename,
-                "content_type": file.content_type,
-                "size": file.file.tell(),
-                "file_id": file_id,
-            }
-
-            with open(f"{file_path}/metadata.json", "w") as metadata_file:
-                metadata_file.write(json.dumps(metadata, indent=4))
-                
-            file_ids.append(file_id)
-
-        return JSONResponse(status_code=200, content={"success": True, "message": "File uploaded successfully","files": file_ids})
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 
 @app.get("/files/{file_name}")
 def get_file(file_name: str):
