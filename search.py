@@ -11,7 +11,7 @@ from extract_query_details import extract_query_details
 from post_processors.filter import filter_nodes
 from post_processors.re_rank_nodes import re_rank_nodes
 from post_processors.crop_content import crop_content
-from live_news_search import handle_live_news_search
+from live_industry_report_search import handle_live_industry_reports_search
 from live_google_news_rss_search import handle_live_google_news_rss_search
 from live_sec_search import handle_live_sec_search
 from live_document_search import handle_live_document_search
@@ -108,15 +108,15 @@ def handle_search(query, files: List[FileModel]):
     with concurrent.futures.ThreadPoolExecutor() as executor:
       print("Performing Live Uploaded Documents Search...")
       future_document_search = executor.submit(handle_live_document_search, files)
-      print("Performing Live News Search...")
-      future_news_search = executor.submit(handle_live_news_search, query)
+      print("Performing Live Industry Reports Search...")
+      future_industry_reports_search = executor.submit(handle_live_industry_reports_search, query)
       print("Performing Live Google News RSS Search...")
       future_google_news_rss_search = executor.submit(lambda: handle_live_google_news_rss_search(query))
       print("Performing Live SEC Filing Search...")
       future_sec_search = executor.submit(lambda: [handle_live_sec_search(company["symbol"]) for company in filters["companies"]])
 
       document_nodes = future_document_search.result()
-      live_search_nodes = future_news_search.result()
+      live_industry_reports_search_nodes = future_industry_reports_search.result()
       live_google_news_rss_nodes = future_google_news_rss_search.result()
       live_sec_nodes = [node for sublist in future_sec_search.result() for node in sublist]
     
@@ -148,12 +148,12 @@ def handle_search(query, files: List[FileModel]):
     # print("Performing Live News Search...")
     # live_search_nodes = handle_live_news_search(query)
     
-    print("Live News Search Results")
-    for node in live_search_nodes:
+    print("Live Industry Reports Search Results")
+    for node in live_industry_reports_search_nodes:
       print(node["node_id"])
       
     print()
-    for node in live_search_nodes:      
+    for node in live_industry_reports_search_nodes:      
       result_nodes.append({
         "content": node["content"],
         "node_id":node["node_id"],

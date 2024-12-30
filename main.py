@@ -62,7 +62,7 @@ def read_root():
 async def search(body: QueryModel):
     try:
         nodes, valid_sources, invalid_sources = handle_search(body.message, files=body.files)
-        summary = handle_chat([NodeModel(**node) for node in nodes], body.message, [], """
+        summary = "No Results to summarize" if len(nodes) == 0 else handle_chat([NodeModel(**node) for node in nodes], body.message, [], """
                             Provide a professional research memo as if you are a 3rd-year Business Analyst at Goldman Sachs' Investment Banking Division and an HBS graduate. The memo should meet the following criteria:
                             - Start with a one-sentence summary that provides a clear overview of the investment thesis or opportunity.
                             - Structure the content using key topics, written in bold bullet points.
