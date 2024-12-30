@@ -18,9 +18,6 @@ def handle_chat(nodes, search_query, chat_history, message):
         *Snippets of Original nodes Content that answers above search query:* {[node.content for node in nodes]}
 
         Based on the above information, provide a response in to the user's message.
-        If users message is out of context, then say you dont have information on that.
-        Only answer from the context provided above.
-        Answer should be in bullet points.
         """
 
         messages = [
