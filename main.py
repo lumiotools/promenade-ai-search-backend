@@ -65,8 +65,8 @@ async def search(body: QueryModel):
         summary = handle_chat([NodeModel(**node) for node in nodes], body.message, [], """
                             Provide a professional research memo as if you are a 3rd-year Business Analyst at Goldman Sachs' Investment Banking Division and an HBS graduate. The memo should meet the following criteria:
                             - Start with a one-sentence summary that provides a clear overview of the investment thesis or opportunity.
-                            - Structure the content using key topics, written in bullet points.
-                            - Each bullet point should have: A clear title. Concise supporting points explaining the topic. Conclude with a summary statement, summarizing the recommendation or key takeaway in a professional tone.
+                            - Structure the content using key topics, written in bold bullet points.
+                            - Each bullet point should have: A clear title (in bold). Concise supporting points explaining the topic. Conclude with a summary statement, summarizing the recommendation or key takeaway in a professional tone.
                             - Keep the memo 100 words maximum. Ensure the tone is formal and professional. Write in polished business English.  
                             - Do not include the titles like "Memo:" or "Conclusion:" in the memo.
                             """)
