@@ -12,7 +12,7 @@ class FileModel(BaseModel):
 
 def get_industry_reports(query):
     try:
-        search_url = f"https://customsearch.googleapis.com/customsearch/v1?cx={os.getenv('GOOGLE_SEARCH_ENGINE_ID')}&q={query}&fileType=pdf&nums=20&key={os.getenv('GOOGLE_SEARCH_API_KEY')}"
+        search_url = f"https://customsearch.googleapis.com/customsearch/v1?cx={os.getenv('GOOGLE_SEARCH_ENGINE_ID')}&q={query}&fileType=pdf&nums=15&key={os.getenv('GOOGLE_SEARCH_API_KEY')}"
 
         response = requests.get(search_url)
         if response.status_code != 200:

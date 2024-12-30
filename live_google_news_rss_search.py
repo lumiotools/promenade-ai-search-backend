@@ -24,7 +24,7 @@ def handle_live_google_news_rss_search(query):
                 if child.tag == "link":
                     encoded_articles.append(child.text)
                     
-            if len(encoded_articles) == 25:
+            if len(encoded_articles) == 20:
                 break
             
     print("Decoding google news article urls...")
